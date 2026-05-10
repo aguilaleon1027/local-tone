@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>장금이 한복 — AI 가상 피팅</title>
+  <meta name="description" content="AI 가상 피팅으로 나만의 한복을 발견하세요. 장금이 한복의 프리미엄 컬렉션." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+  <!-- 커스텀 커서 -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-follower" id="cursorFollower"></div>
+
+  <!-- 네비게이션 -->
+  <nav class="nav" id="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <span class="logo-ko">장금이</span>
+        <span class="logo-sub">HANBOK</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#collection" class="nav-link">컬렉션</a></li>
+        <li><a href="#fitting" class="nav-link">AI 피팅</a></li>
+        <li><a href="#about" class="nav-link">브랜드</a></li>
+        <li><a href="#contact" class="nav-link">문의</a></li>
+      </ul>
+      <a href="#fitting" class="btn btn-nav">AI 피팅 체험</a>
+      <button class="nav-toggle" id="navToggle" aria-label="메뉴">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- 모바일 메뉴 -->
+  <div class="mobile-menu" id="mobileMenu">
+    <ul>
+      <li><a href="#collection" class="mobile-link">컬렉션</a></li>
+      <li><a href="#fitting" class="mobile-link">AI 피팅</a></li>
+      <li><a href="#about" class="mobile-link">브랜드</a></li>
+      <li><a href="#contact" class="mobile-link">문의</a></li>
+    </ul>
+    <a href="#fitting" class="btn btn-primary mobile-cta">AI 피팅 체험하기</a>
+  </div>
+
+  <!-- 히어로 -->
+  <section class="hero" id="home">
+    <div class="hero-bg">
+      <div class="hero-orb orb-1"></div>
+      <div class="hero-orb orb-2"></div>
+      <div class="hero-orb orb-3"></div>
+      <div class="hero-pattern"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge reveal">
+        <span class="badge-dot"></span>
+        AI 가상 피팅 서비스 오픈
+      </div>
+      <h1 class="hero-title reveal">
+        <span class="title-line">전통의 아름다움,</span>
+        <span class="title-line title-accent">미래의 기술로</span>
+      </h1>
+      <p class="hero-desc reveal">
+        AI 가상 피팅으로 수백 가지 한복을<br />
+        직접 입어보지 않고도 나만의 스타일을 찾아보세요.
+      </p>
+      <div class="hero-actions reveal">
+        <a href="#fitting" class="btn btn-primary btn-lg">
+          <span>AI 피팅 시작하기</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <a href="#collection" class="btn btn-ghost btn-lg">컬렉션 보기</a>
+      </div>
+      <div class="hero-stats reveal">
+        <div class="stat">
+          <span class="stat-num" data-count="2000">0</span>
+          <span class="stat-label">피팅 완료</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num" data-count="120">0</span>
+          <span class="stat-label">한복 스타일</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num" data-count="98">0</span>
+          <span class="stat-label">% 만족도</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-visual reveal">
+      <div class="hanbok-showcase">
+        <div class="showcase-card card-1">
+          <div class="showcase-gradient" style="background: linear-gradient(145deg, #8C1C2F 0%, #5a1020 40%, #1E3A6E 100%)"></div>
+          <div class="showcase-label">혼례 한복</div>
+        </div>
+        <div class="showcase-card card-2">
+          <div class="showcase-gradient" style="background: linear-gradient(145deg, #5B2D82 0%, #3d1a5e 50%, #C9A227 100%)"></div>
+          <div class="showcase-label">궁중 한복</div>
+        </div>
+        <div class="showcase-card card-3">
+          <div class="showcase-gradient" style="background: linear-gradient(145deg, #7FB069 0%, #a8d5a2 50%, #F4B8C1 100%)"></div>
+          <div class="showcase-label">봄 한복</div>
+        </div>
+        <div class="showcase-badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+          AI POWERED
+        </div>
+      </div>
+    </div>
+    <div class="scroll-indicator">
+      <div class="scroll-line"></div>
+      <span>스크롤</span>
+    </div>
+  </section>
+
+  <!-- 특징 섹션 -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">WHY JANGGEUM</span>
+        <h2 class="section-title">왜 장금이 한복인가요?</h2>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card reveal">
+          <div class="feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+          </div>
+          <h3>AI 가상 피팅</h3>
+          <p>최신 AI 기술로 내 사진에 한복을 즉시 피팅해드립니다. 매장 방문 없이 수백 가지 스타일을 체험하세요.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>전통 장인 정신</h3>
+          <p>30년 경력의 전통 한복 장인이 한 땀 한 땀 정성으로 제작합니다. 품질에 대한 자부심을 보장합니다.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+          <h3>맞춤 제작</h3>
+          <p>표준 사이즈부터 완전 맞춤 제작까지. 체형과 취향에 맞는 나만의 한복을 완성해드립니다.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <h3>빠른 제작 & 배송</h3>
+          <p>주문 후 최소 7일 내 제작 완료. 전국 무료 배송과 함께 소중한 날을 위해 제때 도착합니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 컬렉션 섹션 -->
+  <section class="collection" id="collection">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">COLLECTION</span>
+        <h2 class="section-title">한복 컬렉션</h2>
+        <p class="section-desc">전통부터 현대까지, 다양한 스타일의 한복을 만나보세요.</p>
+      </div>
+
+      <!-- 카테고리 필터 -->
+      <div class="category-filter reveal" id="categoryFilter">
+        <button class="filter-btn active" data-category="all">전체</button>
+      </div>
+
+      <!-- 한복 그리드 -->
+      <div class="hanbok-grid" id="hanbokGrid">
+        <div class="grid-skeleton">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI 피팅 섹션 -->
+  <section class="fitting-section" id="fitting">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">AI VIRTUAL FITTING</span>
+        <h2 class="section-title">AI 가상 피팅 체험</h2>
+        <p class="section-desc">사진을 업로드하고 원하는 한복을 선택하면<br />AI가 즉시 피팅 결과를 보여드립니다.</p>
+      </div>
+
+      <div class="fitting-wrapper">
+        <!-- 스텝 인디케이터 -->
+        <div class="fitting-steps reveal">
+          <div class="step active" id="step1Indicator">
+            <div class="step-num">1</div>
+            <span>사진 업로드</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="step" id="step2Indicator">
+            <div class="step-num">2</div>
+            <span>한복 선택</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="step" id="step3Indicator">
+            <div class="step-num">3</div>
+            <span>결과 확인</span>
+          </div>
+        </div>
+
+        <!-- 스텝 1: 사진 업로드 -->
+        <div class="fitting-step-panel active" id="fittingStep1">
+          <div class="upload-area" id="uploadArea">
+            <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp" hidden />
+            <div class="upload-placeholder" id="uploadPlaceholder">
+              <div class="upload-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              </div>
+              <p class="upload-title">사진을 드래그하거나 클릭하여 업로드</p>
+              <p class="upload-hint">JPG, PNG, WEBP · 최대 10MB · 정면 사진 권장</p>
+              <button class="btn btn-outline" onclick="document.getElementById('photoInput').click()">사진 선택하기</button>
+            </div>
+            <div class="upload-preview hidden" id="uploadPreview">
+              <img id="previewImg" src="" alt="업로드된 사진" />
+              <button class="preview-remove" id="removePhoto" aria-label="사진 제거">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="fitting-tips">
+            <h4>좋은 결과를 위한 팁</h4>
+            <ul>
+              <li>정면을 바라보는 전신 사진</li>
+              <li>밝고 깨끗한 배경</li>
+              <li>몸 전체가 나오는 구도</li>
+            </ul>
+          </div>
+          <button class="btn btn-primary btn-lg fitting-next" id="toStep2" disabled>
+            다음 단계: 한복 선택
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </div>
+
+        <!-- 스텝 2: 한복 선택 -->
+        <div class="fitting-step-panel" id="fittingStep2">
+          <div class="fitting-hanbok-grid" id="fittingHanbokGrid"></div>
+          <div class="fitting-selected-info hidden" id="selectedInfo">
+            <div class="selected-preview" id="selectedPreview"></div>
+            <div class="selected-details" id="selectedDetails"></div>
+          </div>
+          <div class="fitting-step2-actions">
+            <button class="btn btn-ghost" id="backToStep1">← 이전</button>
+            <button class="btn btn-primary btn-lg" id="startFitting" disabled>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+              AI 피팅 시작하기
+            </button>
+          </div>
+        </div>
+
+        <!-- 스텝 3: 결과 -->
+        <div class="fitting-step-panel" id="fittingStep3">
+          <div class="fitting-loading hidden" id="fittingLoading">
+            <div class="loading-animation">
+              <div class="loading-ring"></div>
+              <div class="loading-ring ring-2"></div>
+              <div class="loading-ring ring-3"></div>
+            </div>
+            <p class="loading-text">AI가 피팅 중입니다...</p>
+            <p class="loading-sub">잠시만 기다려 주세요</p>
+          </div>
+          <div class="fitting-result hidden" id="fittingResult">
+            <div class="result-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <h3 class="result-title">피팅 완료!</h3>
+            <p class="result-message" id="resultMessage"></p>
+            <div class="result-hanbok-card" id="resultHanbokCard"></div>
+            <div class="result-actions">
+              <button class="btn btn-primary" id="retryFitting">다시 피팅하기</button>
+              <a href="#contact" class="btn btn-outline">구매 상담하기</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 브랜드 스토리 -->
+  <section class="about" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-content reveal">
+          <span class="section-tag">OUR STORY</span>
+          <h2 class="section-title">30년의 전통,<br />새로운 시작</h2>
+          <p>1994년 인사동에서 시작된 장금이 한복은 30년간 수많은 분들의 특별한 날을 함께해왔습니다.</p>
+          <p>전통 장인의 솜씨와 현대 AI 기술의 만남. 이제 누구나 집에서 편안하게 나만의 한복을 찾아보실 수 있습니다.</p>
+          <div class="about-metrics">
+            <div class="metric">
+              <span class="metric-num">30+</span>
+              <span class="metric-label">년 전통</span>
+            </div>
+            <div class="metric">
+              <span class="metric-num">50,000+</span>
+              <span class="metric-label">제작 실적</span>
+            </div>
+            <div class="metric">
+              <span class="metric-num">4.9</span>
+              <span class="metric-label">평점</span>
+            </div>
+          </div>
+        </div>
+        <div class="about-visual reveal">
+          <div class="about-cards">
+            <div class="about-card card-big" style="background: linear-gradient(145deg, #8C1C2F, #1E3A6E)">
+              <div class="about-card-label">전통의 美</div>
+            </div>
+            <div class="about-card card-sm1" style="background: linear-gradient(145deg, #5B2D82, #C9A227)">
+              <div class="about-card-label">장인 정신</div>
+            </div>
+            <div class="about-card card-sm2" style="background: linear-gradient(145deg, #2D6B59, #7FB069)">
+              <div class="about-card-label">미래 기술</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 고객 후기 -->
+  <section class="reviews" id="reviews">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">REVIEWS</span>
+        <h2 class="section-title">고객 후기</h2>
+      </div>
+      <div class="reviews-track" id="reviewsTrack">
+        <div class="review-card">
+          <div class="review-stars">★★★★★</div>
+          <p class="review-text">"AI 피팅 덕분에 결혼식 한복을 고르는 게 너무 쉬웠어요. 실제로 입어보니 피팅 결과와 거의 똑같았습니다!"</p>
+          <div class="review-author">
+            <div class="author-avatar" style="background: linear-gradient(135deg, #8C1C2F, #1E3A6E)">K</div>
+            <div>
+              <strong>김지은</strong>
+              <span>웨딩 한복 구매</span>
+            </div>
+          </div>
+        </div>
+        <div class="review-card">
+          <div class="review-stars">★★★★★</div>
+          <p class="review-text">"아이 돌잔치 한복을 맞춰줬는데 퀄리티가 정말 최고예요. 장인분이 정성껏 만들어주신 게 느껴졌습니다."</p>
+          <div class="review-author">
+            <div class="author-avatar" style="background: linear-gradient(135deg, #F4A7B9, #FFD166)">P</div>
+            <div>
+              <strong>박수현</strong>
+              <span>아동 한복 구매</span>
+            </div>
+          </div>
+        </div>
+        <div class="review-card">
+          <div class="review-stars">★★★★★</div>
+          <p class="review-text">"궁중 한복 포토스튜디오 촬영에 입었는데 정말 아름다웠어요. 가상 피팅이 정확해서 고르기도 편했습니다."</p>
+          <div class="review-author">
+            <div class="author-avatar" style="background: linear-gradient(135deg, #5B2D82, #C9A227)">L</div>
+            <div>
+              <strong>이민아</strong>
+              <span>궁중 한복 구매</span>
+            </div>
+          </div>
+        </div>
+        <div class="review-card">
+          <div class="review-stars">★★★★★</div>
+          <p class="review-text">"생활 한복을 처음 도전해봤는데 AI 피팅으로 자신감이 생겼어요. 배송도 빠르고 마감도 깔끔합니다."</p>
+          <div class="review-author">
+            <div class="author-avatar" style="background: linear-gradient(135deg, #7FBEAC, #FFF8EE)">C</div>
+            <div>
+              <strong>최현우</strong>
+              <span>생활 한복 구매</span>
+            </div>
+          </div>
+        </div>
+        <div class="review-card">
+          <div class="review-stars">★★★★★</div>
+          <p class="review-text">"명절마다 장금이 한복에서 맞춥니다. 10년째 단골인데 품질이 한 번도 실망시킨 적이 없어요."</p>
+          <div class="review-author">
+            <div class="author-avatar" style="background: linear-gradient(135deg, #C9A227, #3D7A6A)">O</div>
+            <div>
+              <strong>오정희</strong>
+              <span>10년 단골</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA 섹션 -->
+  <section class="cta-section">
+    <div class="cta-bg">
+      <div class="cta-orb"></div>
+    </div>
+    <div class="container">
+      <div class="cta-content reveal">
+        <h2>지금 바로 AI 피팅을 체험해보세요</h2>
+        <p>무료로 나만의 한복 스타일을 찾아드립니다</p>
+        <a href="#fitting" class="btn btn-primary btn-xl">무료 AI 피팅 체험</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 문의 섹션 -->
+  <section class="contact" id="contact">
+    <div class="container">
+      <div class="contact-grid">
+        <div class="contact-info reveal">
+          <span class="section-tag">CONTACT</span>
+          <h2 class="section-title">상담 & 문의</h2>
+          <div class="contact-items">
+            <div class="contact-item">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.1a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16l.19.92z"/></svg>
+              <div>
+                <strong>전화 상담</strong>
+                <span>02-1234-5678</span>
+                <small>평일 10:00 - 18:00</small>
+              </div>
+            </div>
+            <div class="contact-item">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <div>
+                <strong>이메일</strong>
+                <span>hello@janggeum.kr</span>
+                <small>24시간 접수 가능</small>
+              </div>
+            </div>
+            <div class="contact-item">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <div>
+                <strong>매장 위치</strong>
+                <span>서울 종로구 인사동길 12</span>
+                <small>지하철 3호선 안국역 2번 출구</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <form class="contact-form reveal" id="contactForm">
+          <div class="form-group">
+            <label for="contactName">이름</label>
+            <input type="text" id="contactName" placeholder="홍길동" required />
+          </div>
+          <div class="form-group">
+            <label for="contactPhone">연락처</label>
+            <input type="tel" id="contactPhone" placeholder="010-0000-0000" required />
+          </div>
+          <div class="form-group">
+            <label for="contactOccasion">용도</label>
+            <select id="contactOccasion">
+              <option value="">선택해주세요</option>
+              <option value="결혼식">결혼식 / 혼례</option>
+              <option value="돌잔치">돌잔치</option>
+              <option value="명절">명절</option>
+              <option value="졸업식">졸업식</option>
+              <option value="포토스튜디오">포토스튜디오</option>
+              <option value="일상">일상 생활</option>
+              <option value="기타">기타</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="contactMessage">문의 내용</label>
+            <textarea id="contactMessage" rows="4" placeholder="궁금하신 점을 자유롭게 남겨주세요."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">상담 신청하기</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- 푸터 -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="footer-logo">
+            <span class="logo-ko">장금이</span>
+            <span class="logo-sub">HANBOK</span>
+          </div>
+          <p>전통의 아름다움을 현대의 기술로.<br />30년 장인의 손끝에서 완성됩니다.</p>
+          <div class="footer-social">
+            <a href="#" aria-label="인스타그램">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+            </a>
+            <a href="#" aria-label="카카오채널">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2C6.48 2 2 5.82 2 10.5c0 2.88 1.64 5.43 4.17 7.03L5 21l4.48-2.24A12.16 12.16 0 0 0 12 19c5.52 0 10-3.82 10-8.5S17.52 2 12 2z"/></svg>
+            </a>
+            <a href="#" aria-label="유튜브">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/></svg>
+            </a>
+          </div>
+        </div>
+        <div class="footer-links">
+          <h4>서비스</h4>
+          <ul>
+            <li><a href="#fitting">AI 가상 피팅</a></li>
+            <li><a href="#collection">한복 컬렉션</a></li>
+            <li><a href="#about">브랜드 스토리</a></li>
+            <li><a href="#contact">맞춤 제작 상담</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>카테고리</h4>
+          <ul>
+            <li><a href="#collection">혼례 한복</a></li>
+            <li><a href="#collection">궁중 한복</a></li>
+            <li><a href="#collection">생활 한복</a></li>
+            <li><a href="#collection">아동 한복</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>고객지원</h4>
+          <ul>
+            <li><a href="#contact">상담 문의</a></li>
+            <li><a href="#">배송 안내</a></li>
+            <li><a href="#">교환 / 반품</a></li>
+            <li><a href="#">사이즈 가이드</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2024 장금이 한복. All rights reserved.</p>
+        <div class="footer-legal">
+          <a href="#">개인정보처리방침</a>
+          <a href="#">이용약관</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
