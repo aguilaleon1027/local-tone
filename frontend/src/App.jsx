@@ -35,42 +35,48 @@ const REVIEWS = [
 const I18N = {
   en: {
     short: 'EN',
-    title: 'Book Your Hanbok Experience',
+    title: 'International Booking',
     subtitle: 'Traditional Korean clothing · Hwaseong Haenggung, Suwon',
-    namePh: 'Full name',
-    peoplePh: 'No. of guests',
-    type: 'Experience Type',
-    types: ['Try-on Only', 'Full Purchase', 'Wedding Hanbok', "Kids' Hanbok"],
-    notePh: 'Special requests (size, occasion…)',
+    namePh: 'Full name *',
+    phonePh: 'Phone number *',
+    emailPh: 'Email (optional)',
+    dateLabel: 'Booking Date',
+    hanbokLabel: 'Select Hanbok',
+    hanbokSub: 'Multiple selection allowed · Each hanbok is booked separately',
     submit: 'Request Booking',
     success: 'Booking Requested!',
     successSub: "We'll contact you within 24 hours.",
+    newBooking: 'New Booking',
   },
   zh: {
     short: '中',
-    title: '预约韩服体验',
+    title: '国际预约',
     subtitle: '韩国传统服装 · 水原华城行宫',
-    namePh: '请输入您的姓名',
-    peoplePh: '人数（例：2人）',
-    type: '体验类型',
-    types: ['试穿体验', '购买韩服', '婚礼韩服', '儿童韩服'],
-    notePh: '尺寸、场合等特殊要求',
+    namePh: '姓名 *',
+    phonePh: '联系电话 *',
+    emailPh: '电子邮件（选填）',
+    dateLabel: '预约日期',
+    hanbokLabel: '选择韩服',
+    hanbokSub: '可多选 · 每件韩服分别登记预约',
     submit: '提交预约',
     success: '预约已提交！',
     successSub: '我们将在24小时内与您联系。',
+    newBooking: '重新预约',
   },
   ja: {
     short: '日',
-    title: '韓服体験のご予約',
+    title: '国際予約',
     subtitle: '韓国伝統衣装 · 水原華城行宮',
-    namePh: 'お名前を入力',
-    peoplePh: '人数（例：2名）',
-    type: '体験タイプ',
-    types: ['試着体験', '韓服購入', '結婚式韓服', 'お子様韓服'],
-    notePh: 'サイズ・ご要望など',
+    namePh: 'お名前 *',
+    phonePh: '電話番号 *',
+    emailPh: 'メールアドレス（任意）',
+    dateLabel: 'ご予約日',
+    hanbokLabel: '韓服を選択',
+    hanbokSub: '複数選択可 · 韓服ごとに予約が登録されます',
     submit: '予約する',
     success: '予約受付完了！',
     successSub: '24時間以内にご連絡いたします。',
+    newBooking: '新規予約',
   },
 }
 
@@ -93,7 +99,85 @@ const CARD_STYLE = { background: '#FFFFFF', border: '1px solid #E8E8E8', borderR
 /* ══════════════════════════════════════
    피팅 탭
 ══════════════════════════════════════ */
-function FittingTab() {
+/* ── 한복 선택 그리드 (예약 폼 공용) ── */
+function HanbokSelectGrid({ items, selected, onToggle, label, subLabel }) {
+  return (
+    <div style={{ borderTop: '1px solid #F2F2F2', paddingTop: '14px' }}>
+      <div className="flex items-center justify-between mb-1">
+        <p className="font-sans font-bold text-[12px]" style={{ color: '#111111' }}>{label}</p>
+        {selected.length > 0 && (
+          <span className="font-sans font-bold text-[10px] px-2 py-0.5 rounded-full" style={{ background: '#111111', color: '#FFFFFF' }}>
+            {selected.length}
+          </span>
+        )}
+      </div>
+      <p className="font-sans text-[11px] mb-3" style={{ color: '#999999' }}>{subLabel}</p>
+      {items.length === 0 ? (
+        <div className="flex items-center justify-center py-8">
+          <div className="w-5 h-5 border-2 rounded-full animate-spin" style={{ borderColor: '#E8E8E8', borderTopColor: '#111111' }} />
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-2">
+          {items.map((item) => {
+            const isSelected = selected.some((h) => h.id === item.id)
+            return (
+              <motion.div
+                key={item.id}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => onToggle(item)}
+                className="relative rounded-xl overflow-hidden cursor-pointer"
+                style={{ outline: isSelected ? '2.5px solid #111111' : '2.5px solid transparent', outlineOffset: '-1px' }}
+              >
+                <div className="aspect-[3/4] relative" style={{ background: '#F2F2F2' }}>
+                  <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.65), transparent 55%)' }} />
+                  {isSelected && (
+                    <div className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: '#111111' }}>
+                      <Check size={11} style={{ color: '#FFFFFF' }} strokeWidth={3} />
+                    </div>
+                  )}
+                  <div className="absolute bottom-0 inset-x-0 p-2">
+                    <p className="font-sans font-semibold text-[11px] text-white leading-tight truncate" style={{ letterSpacing: '-0.01em' }}>{item.title}</p>
+                    <p className="font-sans text-[9px] mt-0.5" style={{ color: 'rgba(255,255,255,0.65)' }}>{item.category}</p>
+                  </div>
+                </div>
+              </motion.div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ── 한복 선택 토글 헬퍼 ── */
+const toggleItem = (prev, item) =>
+  prev.some((h) => h.id === item.id)
+    ? prev.filter((h) => h.id !== item.id)
+    : [...prev, item]
+
+/* ── 예약 submit 공통 로직 ── */
+async function submitBookingData(form, selectedHanboks, setSubmitting, setDone, errorMsg) {
+  if (!form.name || !form.phone) return
+  setSubmitting(true)
+  try {
+    const targets = selectedHanboks.length > 0 ? selectedHanboks : [{ id: null }]
+    await Promise.all(targets.map((h) => api.createBooking({
+      name: form.name,
+      phone: form.phone,
+      email: form.email || null,
+      booking_date: form.booking_date || null,
+      hanbok_id: h.id,
+    })))
+    setDone(true)
+  } catch {
+    alert(errorMsg)
+  } finally {
+    setSubmitting(false)
+  }
+}
+
+function FittingTab({ catalog }) {
   return (
     <div className="h-full overflow-y-auto no-scrollbar bg-white">
       {/* 히어로 */}
@@ -125,7 +209,7 @@ function FittingTab() {
       </div>
 
       <div className="px-4 pt-4 pb-6 bg-bg">
-        <FittingWizard />
+        <FittingWizard catalog={catalog} />
       </div>
     </div>
   )
@@ -134,22 +218,11 @@ function FittingTab() {
 /* ══════════════════════════════════════
    컬렉션 탭
 ══════════════════════════════════════ */
-function CollectionTab({ onFit }) {
-  const [items, setItems] = useState([])
-  const [cats, setCats] = useState([])
+function CollectionTab({ onFit, catalog }) {
   const [active, setActive] = useState('전체')
 
-  useEffect(() => {
-    api.getCatalog().then(setItems).catch(() => {})
-    api.getCategories().then((data) => {
-      const names = Array.isArray(data)
-        ? data.map((c) => typeof c === 'string' ? c : c.name).filter((n) => n && n !== '전체' && n !== 'all')
-        : []
-      setCats(names)
-    }).catch(() => {})
-  }, [])
-
-  const filtered = active === '전체' ? items : items.filter((i) => i.category === active)
+  const cats = [...new Set(catalog.map((i) => i.category).filter(Boolean))].sort()
+  const filtered = active === '전체' ? catalog : catalog.filter((i) => i.category === active)
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -187,8 +260,11 @@ function CollectionTab({ onFit }) {
               >
                 {/* 썸네일 */}
                 <div className="aspect-[3/4] rounded-lg overflow-hidden relative mb-2.5"
-                  style={{ background: item.gradient || '#F2F2F2' }}>
-                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to top,rgba(0,0,0,0.5),transparent 50%)' }} />
+                  style={{ background: '#F2F2F2' }}>
+                  {item.image_url && (
+                    <img src={item.image_url} alt={item.title} className="absolute inset-0 w-full h-full object-cover" />
+                  )}
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to top,rgba(0,0,0,0.45),transparent 50%)' }} />
                   <span
                     className="absolute top-2 left-2 text-[9px] font-bold text-white tracking-wide uppercase px-1.5 py-0.5"
                     style={{ background: 'rgba(0,0,0,0.35)', borderRadius: '3px', backdropFilter: 'blur(4px)' }}
@@ -198,10 +274,7 @@ function CollectionTab({ onFit }) {
                 </div>
 
                 <p className="font-sans font-bold text-[13px] leading-tight" style={{ color: '#111111', letterSpacing: '-0.02em' }}>
-                  {item.name}
-                </p>
-                <p className="font-sans font-semibold text-[12px] mt-0.5" style={{ color: '#555555' }}>
-                  {item.price_range?.min?.toLocaleString()}원~
+                  {item.title}
                 </p>
 
                 <motion.button
@@ -339,30 +412,25 @@ function NearbyTab() {
 /* ══════════════════════════════════════
    정보 탭
 ══════════════════════════════════════ */
-function InfoTab() {
-  const [form, setForm] = useState({ name: '', phone: '', message: '' })
-  const [sent, setSent] = useState(false)
-  const [loading, setLoading] = useState(false)
+function InfoTab({ catalog }) {
   const [lang, setLang] = useState('en')
-  const [bookForm, setBookForm] = useState({ name: '', date: '', people: '', type: '', note: '' })
-  const [bookSent, setBookSent] = useState(false)
-  const [bookLoading, setBookLoading] = useState(false)
   const t = I18N[lang]
 
-  const submit = async (e) => {
-    e.preventDefault()
-    if (!form.name || !form.phone) return
-    setLoading(true)
-    await new Promise((r) => setTimeout(r, 700))
-    setLoading(false); setSent(true)
-  }
-  const submitBook = async (e) => {
-    e.preventDefault()
-    if (!bookForm.name || !bookForm.date) return
-    setBookLoading(true)
-    await new Promise((r) => setTimeout(r, 700))
-    setBookLoading(false); setBookSent(true)
-  }
+  const [bookingForm, setBookingForm] = useState({ name: '', phone: '', email: '', booking_date: '' })
+  const [selectedHanboks, setSelectedHanboks] = useState([])
+  const [bookingSubmitting, setBookingSubmitting] = useState(false)
+  const [bookingDone, setBookingDone] = useState(false)
+
+  const [intlForm, setIntlForm] = useState({ name: '', phone: '', email: '', booking_date: '' })
+  const [intlSelectedHanboks, setIntlSelectedHanboks] = useState([])
+  const [intlSubmitting, setIntlSubmitting] = useState(false)
+  const [intlDone, setIntlDone] = useState(false)
+
+  const toggleHanbok = (item) => setSelectedHanboks((prev) => toggleItem(prev, item))
+  const toggleIntlHanbok = (item) => setIntlSelectedHanboks((prev) => toggleItem(prev, item))
+
+  const submitBooking = (e) => { e.preventDefault(); submitBookingData(bookingForm, selectedHanboks, setBookingSubmitting, setBookingDone, '예약 신청 중 오류가 발생했습니다. 다시 시도해주세요.') }
+  const submitIntl = (e) => { e.preventDefault(); submitBookingData(intlForm, intlSelectedHanboks, setIntlSubmitting, setIntlDone, 'Booking failed. Please try again.') }
 
   return (
     <div className="h-full overflow-y-auto no-scrollbar bg-bg">
@@ -411,21 +479,104 @@ function InfoTab() {
         ))}
       </div>
 
+      {/* 한복 예약 신청 */}
+      <SectionHeader title="예약 신청" sub="원하시는 한복을 선택 후 예약해주세요" />
+      <div className="mx-5 mb-4 p-4" style={CARD_STYLE}>
+        <AnimatePresence mode="wait">
+          {bookingDone ? (
+            <motion.div key="booking-done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+              className="flex flex-col items-center py-8 gap-2">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center mb-1" style={{ background: '#F2F2F2' }}>
+                <Check size={22} style={{ color: '#111111' }} strokeWidth={2.5} />
+              </div>
+              <p className="font-sans font-bold text-[15px]" style={{ color: '#111111', letterSpacing: '-0.02em' }}>예약 신청 완료!</p>
+              <p className="font-sans text-[12px] text-center" style={{ color: '#999999' }}>
+                {selectedHanboks.length > 1 ? `${selectedHanboks.length}개 한복 · ` : ''}빠른 시간 내에 연락드리겠습니다.
+              </p>
+              <button
+                onClick={() => { setBookingDone(false); setSelectedHanboks([]); setBookingForm({ name: '', phone: '', email: '', booking_date: '' }) }}
+                className="mt-2 font-sans text-[12px] underline"
+                style={{ color: '#999999' }}
+              >
+                새 예약 신청
+              </button>
+            </motion.div>
+          ) : (
+            <motion.form key="booking-form" onSubmit={submitBooking} className="space-y-3">
+              {/* 기본 정보 */}
+              <div className="space-y-2.5">
+                <input
+                  className="input-field text-[13px]"
+                  placeholder="이름 *"
+                  value={bookingForm.name}
+                  onChange={(e) => setBookingForm((p) => ({ ...p, name: e.target.value }))}
+                />
+                <input
+                  className="input-field text-[13px]"
+                  placeholder="연락처 *"
+                  type="tel"
+                  value={bookingForm.phone}
+                  onChange={(e) => setBookingForm((p) => ({ ...p, phone: e.target.value }))}
+                />
+                <input
+                  className="input-field text-[13px]"
+                  placeholder="이메일 (선택)"
+                  type="email"
+                  value={bookingForm.email}
+                  onChange={(e) => setBookingForm((p) => ({ ...p, email: e.target.value }))}
+                />
+                <div>
+                  <p className="font-sans text-[10px] font-bold uppercase tracking-wide mb-1.5" style={{ color: '#BBBBBB' }}>
+                    예약 날짜
+                  </p>
+                  <input
+                    type="date"
+                    className="input-field text-[13px]"
+                    value={bookingForm.booking_date}
+                    onChange={(e) => setBookingForm((p) => ({ ...p, booking_date: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <HanbokSelectGrid
+                items={catalog}
+                selected={selectedHanboks}
+                onToggle={toggleHanbok}
+                label="한복 선택"
+                subLabel="중복 선택 가능 · 한복별로 예약이 각각 등록됩니다"
+              />
+
+              <motion.button
+                type="submit"
+                whileTap={{ scale: 0.98 }}
+                disabled={bookingSubmitting || !bookingForm.name || !bookingForm.phone}
+                className="btn-gold w-full justify-center disabled:opacity-40"
+              >
+                {bookingSubmitting ? (
+                  <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />처리 중...</>
+                ) : (
+                  `예약 신청하기${selectedHanboks.length > 1 ? ` (${selectedHanboks.length}개)` : ''}`
+                )}
+              </motion.button>
+            </motion.form>
+          )}
+        </AnimatePresence>
+      </div>
+
       {/* 외국인 예약 */}
-      <div className="px-5 pt-6 pb-3">
+      <div className="px-5 pt-2 pb-3">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Globe size={15} style={{ color: '#111111' }} />
             <h2 className="font-sans font-bold text-[17px]" style={{ color: '#111111', letterSpacing: '-0.03em' }}>
-              International Booking
+              {t.title}
             </h2>
           </div>
-          {/* 언어 선택 */}
           <div className="flex gap-px overflow-hidden" style={{ border: '1.5px solid #E0E0E0', borderRadius: '8px' }}>
             {Object.entries(I18N).map(([k, v]) => (
               <button
                 key={k}
-                onClick={() => { setLang(k); setBookSent(false) }}
+                onClick={() => { setLang(k); setIntlDone(false) }}
                 className="px-2.5 py-1 text-[11px] font-bold transition-all duration-150"
                 style={lang === k
                   ? { background: '#111111', color: '#FFFFFF' }
@@ -440,72 +591,83 @@ function InfoTab() {
         <div className="rounded-xl p-4" style={CARD_STYLE}>
           <p className="font-sans text-[11px] mb-4" style={{ color: '#999999' }}>{t.subtitle}</p>
           <AnimatePresence mode="wait">
-            {bookSent ? (
-              <motion.div key="book-done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+            {intlDone ? (
+              <motion.div key="intl-done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
                 className="flex flex-col items-center py-8 gap-2">
                 <div className="w-12 h-12 rounded-full flex items-center justify-center mb-1" style={{ background: '#F2F2F2' }}>
                   <Check size={22} style={{ color: '#111111' }} strokeWidth={2.5} />
                 </div>
                 <p className="font-sans font-bold text-[15px]" style={{ color: '#111111', letterSpacing: '-0.02em' }}>{t.success}</p>
                 <p className="font-sans text-[12px] text-center" style={{ color: '#999999' }}>{t.successSub}</p>
+                <button
+                  onClick={() => { setIntlDone(false); setIntlSelectedHanboks([]); setIntlForm({ name: '', phone: '', email: '', booking_date: '' }) }}
+                  className="mt-2 font-sans text-[12px] underline"
+                  style={{ color: '#999999' }}
+                >
+                  {t.newBooking}
+                </button>
               </motion.div>
             ) : (
-              <motion.form key={`book-${lang}`} onSubmit={submitBook} className="space-y-2.5">
-                <input className="input-field text-[13px]" placeholder={t.namePh} value={bookForm.name}
-                  onChange={(e) => setBookForm((p) => ({ ...p, name: e.target.value }))} />
-                <input type="date" className="input-field text-[13px]" value={bookForm.date}
-                  onChange={(e) => setBookForm((p) => ({ ...p, date: e.target.value }))} />
-                <div className="grid grid-cols-2 gap-2">
-                  <input type="number" min="1" className="input-field text-[13px]" placeholder={t.peoplePh} value={bookForm.people}
-                    onChange={(e) => setBookForm((p) => ({ ...p, people: e.target.value }))} />
-                  <select className="input-field text-[13px]" value={bookForm.type}
-                    onChange={(e) => setBookForm((p) => ({ ...p, type: e.target.value }))}>
-                    <option value="">{t.type}</option>
-                    {t.types.map((tp) => <option key={tp} value={tp}>{tp}</option>)}
-                  </select>
+              <motion.form key={`intl-${lang}`} onSubmit={submitIntl} className="space-y-3">
+                {/* 기본 정보 */}
+                <div className="space-y-2.5">
+                  <input
+                    className="input-field text-[13px]"
+                    placeholder={t.namePh}
+                    value={intlForm.name}
+                    onChange={(e) => setIntlForm((p) => ({ ...p, name: e.target.value }))}
+                  />
+                  <input
+                    className="input-field text-[13px]"
+                    placeholder={t.phonePh}
+                    type="tel"
+                    value={intlForm.phone}
+                    onChange={(e) => setIntlForm((p) => ({ ...p, phone: e.target.value }))}
+                  />
+                  <input
+                    className="input-field text-[13px]"
+                    placeholder={t.emailPh}
+                    type="email"
+                    value={intlForm.email}
+                    onChange={(e) => setIntlForm((p) => ({ ...p, email: e.target.value }))}
+                  />
+                  <div>
+                    <p className="font-sans text-[10px] font-bold uppercase tracking-wide mb-1.5" style={{ color: '#BBBBBB' }}>
+                      {t.dateLabel}
+                    </p>
+                    <input
+                      type="date"
+                      className="input-field text-[13px]"
+                      value={intlForm.booking_date}
+                      onChange={(e) => setIntlForm((p) => ({ ...p, booking_date: e.target.value }))}
+                    />
+                  </div>
                 </div>
-                <textarea rows={2} className="input-field resize-none text-[13px]" placeholder={t.notePh} value={bookForm.note}
-                  onChange={(e) => setBookForm((p) => ({ ...p, note: e.target.value }))} />
-                <motion.button type="submit" whileTap={{ scale: 0.98 }} disabled={bookLoading}
-                  className="btn-gold w-full justify-center disabled:opacity-40">
-                  {bookLoading
-                    ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />{t.submit}</>
-                    : t.submit}
+
+                <HanbokSelectGrid
+                  items={catalog}
+                  selected={intlSelectedHanboks}
+                  onToggle={toggleIntlHanbok}
+                  label={t.hanbokLabel}
+                  subLabel={t.hanbokSub}
+                />
+
+                <motion.button
+                  type="submit"
+                  whileTap={{ scale: 0.98 }}
+                  disabled={intlSubmitting || !intlForm.name || !intlForm.phone}
+                  className="btn-gold w-full justify-center disabled:opacity-40"
+                >
+                  {intlSubmitting ? (
+                    <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />{t.submit}</>
+                  ) : (
+                    `${t.submit}${intlSelectedHanboks.length > 1 ? ` (${intlSelectedHanboks.length})` : ''}`
+                  )}
                 </motion.button>
               </motion.form>
             )}
           </AnimatePresence>
         </div>
-      </div>
-
-      {/* 한국어 상담 */}
-      <SectionHeader title="구매 상담 신청" sub="한국어 문의" />
-      <div className="mx-5 mb-8 p-4" style={CARD_STYLE}>
-        <AnimatePresence mode="wait">
-          {sent ? (
-            <motion.div key="done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-col items-center py-8 gap-2">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center mb-1" style={{ background: '#F2F2F2' }}>
-                <Check size={22} style={{ color: '#111111' }} strokeWidth={2.5} />
-              </div>
-              <p className="font-sans font-bold text-[15px]" style={{ color: '#111111', letterSpacing: '-0.02em' }}>접수 완료!</p>
-              <p className="font-sans text-[12px] text-center" style={{ color: '#999999' }}>빠른 시간 내에 연락드리겠습니다.</p>
-            </motion.div>
-          ) : (
-            <motion.form key="kr-form" onSubmit={submit} className="space-y-2.5">
-              <input className="input-field" placeholder="이름" value={form.name}
-                onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} />
-              <input className="input-field" placeholder="연락처" type="tel" value={form.phone}
-                onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} />
-              <textarea className="input-field resize-none" rows={3} placeholder="문의 내용 (행사, 일정 등)" value={form.message}
-                onChange={(e) => setForm((p) => ({ ...p, message: e.target.value }))} />
-              <motion.button type="submit" whileTap={{ scale: 0.98 }} disabled={loading}
-                className="btn-gold w-full justify-center disabled:opacity-40">
-                {loading ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />처리중...</> : '상담 신청하기'}
-              </motion.button>
-            </motion.form>
-          )}
-        </AnimatePresence>
       </div>
 
       <p className="text-center font-sans text-[10px] pb-6" style={{ color: '#D0D0D0' }}>
@@ -525,6 +687,11 @@ const TABS = [
 
 export default function App() {
   const [tab, setTab] = useState('fitting')
+  const [catalog, setCatalog] = useState([])
+
+  useEffect(() => {
+    api.getCatalog().then(setCatalog).catch(() => {})
+  }, [])
 
   const handleFit = useCallback((hanbokId) => {
     window.dispatchEvent(new CustomEvent('prefill-hanbok', { detail: { id: hanbokId } }))
@@ -567,10 +734,10 @@ export default function App() {
             transition={{ duration: 0.14, ease: 'easeOut' }}
             className="absolute inset-0"
           >
-            {tab === 'fitting'    && <FittingTab />}
-            {tab === 'collection' && <CollectionTab onFit={handleFit} />}
+            {tab === 'fitting'    && <FittingTab catalog={catalog} />}
+            {tab === 'collection' && <CollectionTab onFit={handleFit} catalog={catalog} />}
             {tab === 'nearby'     && <NearbyTab />}
-            {tab === 'info'       && <InfoTab />}
+            {tab === 'info'       && <InfoTab catalog={catalog} />}
           </motion.div>
         </AnimatePresence>
       </main>

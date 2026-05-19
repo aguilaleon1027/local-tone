@@ -35,20 +35,22 @@ function HanbokCard({ item, onFit }) {
       onMouseLeave={() => setHovered(false)}
     >
       <div className="relative aspect-[3/4] overflow-hidden">
-        {/* 단청 상단 선 */}
         <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
           style={{ background: 'linear-gradient(90deg, #8B2820, #C4782A, #8B2820)' }} />
-        <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105"
-          style={{ background: item.gradient }} />
+        <img
+          src={item.image_url}
+          alt={item.title}
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-bg/80 via-transparent to-transparent" />
 
-        <div className="absolute top-4 left-3 flex flex-wrap gap-1.5">
-          {item.tags.slice(0, 2).map((t) => (
-            <span key={t} className="glass rounded-full px-2.5 py-0.5 font-sans text-[10px] text-cream/80 tracking-wide">
-              {t}
+        {item.category && (
+          <div className="absolute top-4 left-3">
+            <span className="glass rounded-full px-2.5 py-0.5 font-sans text-[10px] text-cream/80 tracking-wide">
+              {item.category}
             </span>
-          ))}
-        </div>
+          </div>
+        )}
 
         <AnimatePresence>
           {hovered && (
@@ -72,14 +74,10 @@ function HanbokCard({ item, onFit }) {
       <div className="p-4">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h3 className="font-serif text-sm font-semibold text-cream">{item.name}</h3>
-            <p className="font-sans text-[11px] text-muted mt-0.5">{item.name_en}</p>
+            <h3 className="font-serif text-sm font-semibold text-cream">{item.title}</h3>
+            {item.color && <p className="font-sans text-[11px] text-muted mt-0.5">{item.color}</p>}
           </div>
           <span className="font-sans text-[11px] text-hwang shrink-0 mt-0.5">{item.category}</span>
-        </div>
-        <div className="flex items-center gap-1.5 mt-3">
-          <Tag size={11} className="text-muted" />
-          <span className="font-sans text-xs text-muted">{priceLabel(item.price_range)}</span>
         </div>
       </div>
     </motion.div>

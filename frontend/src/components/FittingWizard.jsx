@@ -143,13 +143,11 @@ function Step1({ onNext }) {
   )
 }
 
-function Step2({ photoId, prefillId, onNext, onBack }) {
-  const [items, setItems] = useState([])
+function Step2({ photoId, prefillId, catalog, onNext, onBack }) {
+  const [items, setItems] = useState(catalog)
   const [index, setIndex] = useState(0)
 
-  useEffect(() => {
-    api.getCatalog().then(setItems).catch(() => {})
-  }, [])
+  useEffect(() => { setItems(catalog) }, [catalog])
 
   useEffect(() => {
     if (prefillId && items.length) {
@@ -195,11 +193,11 @@ function Step2({ photoId, prefillId, onNext, onBack }) {
               transition={{ type: 'spring', stiffness: 320, damping: 32 }}
               onClick={() => abs > 0 && setIndex(i)}
             >
-              <div className="absolute inset-0" style={{ background: item.gradient }} />
+              <img src={item.image_url} alt={item.title} className="absolute inset-0 w-full h-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
               {abs === 0 && (
                 <div className="absolute bottom-3 inset-x-2 text-center">
-                  <p className="font-serif text-xs font-semibold text-white truncate">{item.name}</p>
+                  <p className="font-serif text-xs font-semibold text-white truncate">{item.title}</p>
                 </div>
               )}
             </motion.div>
@@ -247,13 +245,12 @@ function Step2({ photoId, prefillId, onNext, onBack }) {
             className="text-center"
           >
             <span className="font-sans text-[11px] font-semibold text-hwang uppercase tracking-widest">{selected.category}</span>
-            <h3 className="font-sans text-lg font-bold text-ink mt-1" style={{ letterSpacing: '-0.03em' }}>{selected.name}</h3>
-            <p className="font-sans text-xs text-muted mt-1.5 leading-relaxed line-clamp-2">{selected.description}</p>
-            <div className="flex items-center justify-center gap-1.5 mt-2.5 flex-wrap">
-              {selected.colors?.map((c) => (
-                <span key={c} className="font-sans text-[11px] px-2.5 py-1 rounded-full bg-s2 text-muted border border-border">{c}</span>
-              ))}
-            </div>
+            <h3 className="font-sans text-lg font-bold text-ink mt-1" style={{ letterSpacing: '-0.03em' }}>{selected.title}</h3>
+            {selected.color && (
+              <div className="flex items-center justify-center gap-1.5 mt-2.5 flex-wrap">
+                <span className="font-sans text-[11px] px-2.5 py-1 rounded-full bg-s2 text-muted border border-border">{selected.color}</span>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -359,13 +356,11 @@ function Step3({ photoId, hanbok, onRetry }) {
                     <p className="font-sans text-[11px] text-white/90 font-medium">내 사진</p>
                   </div>
                 </div>
-                <div
-                  className="relative rounded-2xl aspect-[3/4] flex flex-col items-center justify-end p-3 shadow-sm"
-                  style={{ background: hanbok?.gradient }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-2xl" />
-                  <div className="relative z-10 text-center">
-                    <p className="font-serif text-xs font-semibold text-white">{hanbok?.name}</p>
+                <div className="relative rounded-2xl aspect-[3/4] overflow-hidden shadow-sm">
+                  <img src={hanbok?.image_url} alt={hanbok?.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                  <div className="absolute bottom-0 inset-x-0 p-2.5 text-center">
+                    <p className="font-serif text-xs font-semibold text-white">{hanbok?.title}</p>
                     <p className="font-sans text-[10px] text-white/70 mt-0.5">{hanbok?.category}</p>
                   </div>
                 </div>
@@ -416,7 +411,7 @@ function Step3({ photoId, hanbok, onRetry }) {
   )
 }
 
-export default function FittingWizard() {
+export default function FittingWizard({ catalog = [] }) {
   const [step, setStep] = useState(0)
   const [dir, setDir] = useState(1)
   const [photoId, setPhotoId] = useState(null)
@@ -439,7 +434,7 @@ export default function FittingWizard() {
       <AnimatePresence mode="wait" custom={dir}>
         <motion.div key={step} custom={dir} variants={slide} initial="enter" animate="center" exit="exit">
           {step === 0 && <Step1 onNext={(id) => { setPhotoId(id); go(1) }} />}
-          {step === 1 && <Step2 photoId={photoId} prefillId={prefillId} onNext={(h) => { setHanbok(h); go(2) }} onBack={() => go(0)} />}
+          {step === 1 && <Step2 photoId={photoId} prefillId={prefillId} catalog={catalog} onNext={(h) => { setHanbok(h); go(2) }} onBack={() => go(0)} />}
           {step === 2 && <Step3 photoId={photoId} hanbok={hanbok} onRetry={reset} />}
         </motion.div>
       </AnimatePresence>

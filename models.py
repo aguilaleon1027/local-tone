@@ -2,27 +2,15 @@ from pydantic import BaseModel
 from typing import Optional
 
 
-class PriceRange(BaseModel):
-    min: int
-    max: int
-
-
 class HanbokItem(BaseModel):
     id: str
-    name: str
-    name_en: str
-    category: str
-    subcategory: Optional[str] = None
-    price_range: PriceRange
-    colors: list[str]
-    color_hex: list[str]
-    gradient: str
-    description: str
-    occasions: list[str]
-    featured: bool = False
-    available: bool = True
-    available_sizes: list[str]
-    tags: list[str] = []
+    title: str
+    category: Optional[str] = None
+    color: Optional[str] = None
+    size: Optional[str] = None
+    image_url: str
+    is_available: bool = True
+    created_at: Optional[str] = None
 
 
 class FittingRequest(BaseModel):
@@ -39,3 +27,11 @@ class FittingResult(BaseModel):
     result_image_url: Optional[str] = None
     ai_recommendation: Optional[str] = None
     photo_url: Optional[str] = None
+
+
+class BookingCreate(BaseModel):
+    name: str
+    phone: str
+    email: Optional[str] = None
+    booking_date: Optional[str] = None
+    hanbok_id: Optional[str] = None

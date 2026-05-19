@@ -1,0 +1,149 @@
+2026-05-18 ~ 19 로커톤 작업내용
+
+1. 예약 폼 수정 및 예약 신청 버튼 클릭 시 해당 내용 데이터베이스로 푸시하는 소프트웨어 구축
+
+[1단계] 요구사항 분석
+
+기존 폼 구조 파악
+- 한국어 상담 폼: 이름, 연락처, 문의 내용 (DB 저장 없음, 프론트엔드 전용)
+- 국제 예약 폼: 이름, 날짜, 인원, 체험 유형, 메모 (DB 저장 없음, 프론트엔드 전용)
+
+변경 목표
+- 수집 데이터: 이름(필수), 전화번호(필수), 이메일(선택), 예약 날짜, 한복 선택
+- 한복 선택 방식: 사진 그리드에서 중복 선택 가능
+- 다중 선택 시 선택한 한복 수만큼 DB에 별도 튜플로 저장 (원자값 원칙)
+- 저장 대상: Supabase booking 테이블
+
+
+[2단계] 데이터베이스 설계
+
+Supabase SQL Editor에서 booking 테이블 생성
+
+CREATE TABLE booking (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  email TEXT,
+  booking_date DATE,
+  hanbok_id UUID REFERENCES hanbok(id),
+  status TEXT DEFAULT '대기',
+  created_at TIMESTAMP DEFAULT now()
+);
+
+설계 포인트
+- hanbok_id는 NULL 허용 (한복 미선택 예약도 가능)
+- hanbok_id는 hanbok 테이블 외래키 참조
+- status 기본값 '대기'로 예약 접수 상태 추적
+- id는 UUID 자동 생성, created_at은 현재 시각 자동 입력
+
+
+[3단계] 백엔드 구현
+
+models.py에 BookingCreate 모델 추가
+- 필드: name(필수), phone(필수), email(선택), booking_date(선택), hanbok_id(선택)
+
+routers/booking.py 신규 생성
+- POST /api/booking/create 엔드포인트 구현
+- NULL 필드는 payload에서 제외 후 Supabase insert
+- 저장 실패 시 500 에러 반환
+
+main.py에 booking 라우터 등록
+- prefix: /api/booking
+
+
+[4단계] 프론트엔드 구현
+
+api.js에 createBooking 함수 추가
+- POST /api/booking/create로 JSON 전송
+
+App.jsx - 한국어 예약 폼 (기존 상담 폼 대체)
+- 폼 필드: 이름, 연락처, 이메일(선택), 예약 날짜
+- 한복 선택 그리드: Supabase hanbok 테이블에서 사진 로드, 2열 그리드 표시
+- 선택된 한복은 검은 테두리 + 우상단 체크 아이콘으로 표시
+- 선택 개수 배지 실시간 업데이트
+- 제출 시 선택한 한복 수만큼 API 반복 호출, 완료 후 성공 화면 전환
+
+App.jsx - 국제 예약 폼 (기존 폼 구조 유지, 데이터 수집 방식 교체)
+- 동일한 폼 구조 적용 (이름, 전화, 이메일, 날짜, 한복 선택)
+- EN / 中 / 日 언어 전환 기능 유지
+- 각 언어별 placeholder 및 안내 문구 i18n 처리
+
+
+[5단계] 데이터 저장 시퀀스
+
+사용자가 예약 신청 버튼 클릭
+  ↓
+프론트엔드: 이름, 전화번호 필수값 유효성 검사
+  ↓
+선택한 한복 목록 순회 (미선택 시 hanbok_id=null로 1건 처리)
+  ↓
+각 한복별로 POST /api/booking/create 호출 (Promise.all 병렬 처리)
+  ↓
+백엔드: BookingCreate 모델로 요청 수신 및 유효성 검사
+  ↓
+백엔드: NULL 필드 제외 후 Supabase booking 테이블에 INSERT
+  ↓
+Supabase: 자동으로 id(UUID), status('대기'), created_at(현재시각) 생성
+  ↓
+백엔드: 저장된 레코드 반환
+  ↓
+프론트엔드: 모든 요청 성공 시 완료 화면 표시
+           실패 시 에러 알림 표시
+
+
+2. 코드 최적화
+
+[백엔드]
+
+1. Supabase 클라이언트 싱글턴화 (db.py 신규 생성)
+   - 전: 요청마다 새 클라이언트 생성, 동일 코드가 hanbok.py / fitting.py / booking.py 3곳에 중복
+   - 후: db.py에 싱글턴 get_db() 함수 하나로 통합, 앱 전체에서 공유
+   - 효과: 매 요청마다 발생하던 TCP 연결 초기화 비용 제거. 코드 수정이 필요할 때 1곳만 변경하면 됨
+
+2. _find_photo() 파일 탐색 방식 개선
+   - 전: 업로드 디렉토리 전체를 순회하며 파일 검색 (O(n))
+   - 후: jpg / jpeg / png / webp 확장자 4개를 직접 경로로 체크 (O(4))
+   - 효과: 업로드 파일이 쌓일수록 탐색 속도 저하가 발생했으나 파일 수와 무관하게 항상 최대 4번 비교로 고정
+
+3. Gemini 클라이언트 중복 생성 제거
+   - 전: 이미지 생성 함수와 텍스트 추천 함수가 각각 별도 Gemini 클라이언트 생성 (한 요청에 2개)
+   - 후: generate_fitting 엔드포인트에서 클라이언트 1개 생성 후 두 함수에 인자로 전달
+   - 효과: 클라이언트 초기화 비용(인증, 세션 설정) 요청당 절반으로 감소
+
+4. import 위치 정리
+   - 전: from google import genai, urllib.parse 등이 함수 내부에 위치
+   - 후: 파일 상단으로 이동
+   - 효과: 함수 내부 import는 호출마다 모듈 시스템을 조회하는 오버헤드 발생. 상단 이동으로 앱 시작 시 1회만 로드
+
+5. /featured 엔드포인트 추가
+   - 전: api.js에서 getFeatured() 호출 시 백엔드에 해당 엔드포인트가 없어 404 오류 발생
+   - 후: GET /api/hanbok/featured 엔드포인트 구현
+   - 효과: 잠재적 런타임 오류 제거, 메인 화면 추천 한복 기능 정상 동작 가능
+
+
+[프론트엔드]
+
+6. getCatalog() API 호출 횟수 감소
+   - 전: CollectionTab, InfoTab, FittingWizard(Step2) 각 탭 진입 시 개별적으로 API 호출 (최대 3회)
+   - 후: App 컴포넌트 최초 마운트 시 1회만 호출, catalog를 props로 각 탭에 전달
+   - 효과: Supabase 네트워크 요청 최대 3분의 1로 감소. 탭 전환 시 로딩 없이 즉시 데이터 표시. API 호출 비용 절감
+
+7. HanbokSelectGrid 컴포넌트 추출
+   - 전: 한국어 예약 폼과 국제 예약 폼에 동일한 한복 그리드 JSX 코드가 약 70줄씩 2벌 작성됨
+   - 후: HanbokSelectGrid 컴포넌트 1개로 통합, 두 폼에서 props만 다르게 재사용
+   - 효과: UI 수정 시 1곳만 변경하면 됨. 한쪽에만 버그가 수정되고 다른 쪽은 누락되는 문제 원천 차단
+
+8. 한복 토글 함수 통합
+   - 전: toggleHanbok, toggleIntlHanbok 동일한 로직의 함수 2개 중복 작성
+   - 후: toggleItem 헬퍼 함수 1개로 통합
+   - 효과: 로직 변경 시 1곳만 수정, 코드 중복 제거
+
+9. 예약 제출 로직 병렬화 및 통합
+   - 전: 여러 한복 선택 시 for...of로 순차 삽입, 한국어/국제 폼에 동일 로직 2벌 중복
+   - 후: Promise.all로 병렬 동시 삽입, submitBookingData 공통 함수 1개로 통합
+   - 효과: 한복 3개 선택 시 순차 처리(3초) → 병렬 처리(약 1초)로 응답 속도 단축. 로직 변경 시 1곳만 수정
+
+10. 카테고리 API 호출 제거
+    - 전: getCategories()를 별도 API로 호출하고 state로 관리
+    - 후: 이미 받아온 catalog 배열에서 Set을 이용해 카테고리 직접 추출
+    - 효과: API 호출 1회 추가 제거. 카탈로그 데이터와 카테고리 목록이 항상 자동으로 동기화됨

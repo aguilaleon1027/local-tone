@@ -26,4 +26,9 @@ export const api = {
     return request('/fitting/generate', { method: 'POST', body: form })
   },
   getResult: (id) => request(`/fitting/result/${id}`),
+  createBooking: (data) => request('/booking/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  }),
 }

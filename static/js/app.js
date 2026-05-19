@@ -167,10 +167,6 @@ function renderCategories(categories, wrap) {
   });
 }
 
-function formatPrice(range) {
-  return `${(range.min / 10000).toFixed(0)}만원~`;
-}
-
 function renderGrid(items, grid) {
   if (!grid) return;
   if (!items.length) {
@@ -180,21 +176,17 @@ function renderGrid(items, grid) {
   grid.innerHTML = items.map(h => `
     <article class="hanbok-card reveal" data-id="${h.id}">
       <div class="card-image">
-        <div class="card-gradient" style="background:${h.gradient}"></div>
+        <img src="${h.image_url}" alt="${h.title}" style="width:100%;height:100%;object-fit:cover;display:block;">
         <div class="card-overlay">
           <button class="overlay-btn overlay-btn-secondary" onclick="openDetail('${h.id}')">상세보기</button>
           <button class="overlay-btn overlay-btn-primary" onclick="goFitting('${h.id}')">AI 피팅</button>
         </div>
-        ${h.featured ? '<span class="card-badge">BEST</span>' : ''}
       </div>
       <div class="card-body">
-        <p class="card-category">${h.category}</p>
-        <h3 class="card-name">${h.name}</h3>
-        <div class="card-colors">
-          ${h.color_hex.map(c => `<span class="color-dot" style="background:${c}" title="${c}"></span>`).join('')}
-        </div>
+        <p class="card-category">${h.category || ''}</p>
+        <h3 class="card-name">${h.title}</h3>
+        ${h.color ? `<div class="card-colors"><span style="font-size:0.8rem;color:var(--text-3)">${h.color}</span></div>` : ''}
         <div class="card-footer">
-          <span class="card-price">${formatPrice(h.price_range)} <small>부터</small></span>
           <button class="btn btn-outline" style="padding:7px 16px;font-size:0.8rem" onclick="goFitting('${h.id}')">피팅하기</button>
         </div>
       </div>
@@ -209,9 +201,9 @@ function renderGrid(items, grid) {
 function renderFittingGrid(items, grid) {
   if (!grid) return;
   grid.innerHTML = items.map(h => `
-    <div class="fitting-item" data-id="${h.id}" data-name="${h.name}" data-price="${formatPrice(h.price_range)}" data-gradient="${h.gradient}">
-      <div class="fitting-item-gradient" style="background:${h.gradient}"></div>
-      <div class="fitting-item-name">${h.name}</div>
+    <div class="fitting-item" data-id="${h.id}" data-name="${h.title}" data-image="${h.image_url}">
+      <img src="${h.image_url}" alt="${h.title}" class="fitting-item-gradient" style="width:100%;height:100%;object-fit:cover;display:block;">
+      <div class="fitting-item-name">${h.title}</div>
     </div>
   `).join('');
 }
@@ -356,11 +348,27 @@ function initFitting() {
     loading?.classList.remove('hidden');
     result?.classList.add('hidden');
 
+    let msgTimer = null;
     try {
       const fd = new FormData();
       fd.append('hanbok_id', selectedHanbokId);
       fd.append('photo_id', uploadedPhotoId);
+
+      const loadingMsgs = [
+        'AI가 한복을 분석하고 있습니다...',
+        '가상 피팅 이미지를 생성 중입니다...',
+        '거의 다 됐어요! 조금만 기다려주세요...',
+      ];
+      let msgIdx = 0;
+      const loadingText = document.getElementById('loadingText');
+      msgTimer = setInterval(() => {
+        msgIdx = (msgIdx + 1) % loadingMsgs.length;
+        if (loadingText) loadingText.textContent = loadingMsgs[msgIdx];
+      }, 8000);
+
       const data = await apiFetch(API.generate, { method: 'POST', body: fd });
+      clearInterval(msgTimer);
+      console.log('[fitting] 서버 응답:', data);
 
       loading?.classList.add('hidden');
       result?.classList.remove('hidden');
@@ -370,21 +378,55 @@ function initFitting() {
       if (msgEl) msgEl.textContent = data.message;
 
       const selectedItem = fittingGrid?.querySelector('.fitting-item.selected');
-      if (cardEl && selectedItem) {
-        cardEl.innerHTML = `
-          <div style="display:flex;align-items:center;gap:16px">
-            <div style="width:60px;height:60px;border-radius:10px;overflow:hidden;flex-shrink:0">
-              <div style="width:100%;height:100%;background:${selectedItem.dataset.gradient}"></div>
-            </div>
+      if (cardEl) {
+        // 1) AI 피팅 이미지 또는 사진+한복 나란히 표시
+        let imageHTML = '';
+        if (data.result_image_url) {
+          imageHTML = `
+            <div style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:16px">
+              <img src="${data.result_image_url}" alt="AI 피팅 결과" style="width:100%;border-radius:16px;display:block;">
+              <div style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);padding:4px 12px;border-radius:20px;color:#fff;font-size:11px;font-weight:600;">✨ AI 피팅 결과</div>
+            </div>`;
+        } else if (data.photo_url) {
+          const hanbokImgCol = selectedItem ? `
+              <div style="position:relative;border-radius:12px;overflow:hidden">
+                <img src="${selectedItem.dataset.image}" alt="${selectedItem.dataset.name}" style="width:100%;aspect-ratio:3/4;object-fit:cover;display:block;">
+                <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.65));padding:8px 10px;color:#fff;font-size:11px;font-weight:600;">${selectedItem.dataset.name}</div>
+              </div>` : '';
+          imageHTML = `
+            <div style="display:grid;grid-template-columns:${selectedItem ? '1fr 1fr' : '1fr'};gap:10px;margin-bottom:16px">
+              <div style="position:relative;border-radius:12px;overflow:hidden">
+                <img src="${data.photo_url}" alt="내 사진" style="width:100%;aspect-ratio:3/4;object-fit:cover;display:block;">
+                <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.65));padding:8px 10px;color:#fff;font-size:11px;font-weight:600;">내 사진</div>
+              </div>
+              ${hanbokImgCol}
+            </div>`;
+        }
+
+        // 2) AI 스타일 추천 텍스트
+        let recHTML = '';
+        if (data.ai_recommendation) {
+          recHTML = `
+            <div style="background:rgba(255,255,255,0.04);border-left:3px solid var(--gold);border-radius:8px;padding:12px 16px;margin-bottom:16px;text-align:left;">
+              <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:6px;letter-spacing:0.08em;">✨ AI 스타일 추천</div>
+              <p style="font-size:13px;color:var(--text-3);line-height:1.6;margin:0;">${data.ai_recommendation}</p>
+            </div>`;
+        }
+
+        // 3) 피팅 정보 카드
+        const infoHTML = selectedItem ? `
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,255,255,0.05);border-radius:12px;">
+            <img src="${selectedItem.dataset.image}" alt="${selectedItem.dataset.name}" style="width:48px;height:48px;border-radius:8px;object-fit:cover;flex-shrink:0;">
             <div>
-              <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px">${selectedItem.dataset.name}</div>
-              <div style="color:var(--gold);font-size:0.88rem">${selectedItem.dataset.price}</div>
-              <div style="color:var(--text-3);font-size:0.75rem;margin-top:2px">피팅 ID: ${data.fitting_id}</div>
+              <div style="font-weight:700;font-size:0.9rem;color:var(--text-1);margin-bottom:2px;">${selectedItem.dataset.name}</div>
+              <div style="font-size:0.75rem;color:var(--text-3);">피팅 ID: ${data.fitting_id}</div>
             </div>
-          </div>
-        `;
+          </div>` : '';
+
+        cardEl.innerHTML = imageHTML + recHTML + infoHTML;
       }
     } catch (err) {
+      clearInterval(msgTimer);
       loading?.classList.add('hidden');
       showToast(err.message, 'error');
       goToStep(2);
@@ -404,12 +446,11 @@ window.selectHanbok = function(item) {
   selectedHanbokId = item.dataset.id;
 
   if (selectedPreview) {
-    selectedPreview.innerHTML = `<div style="width:80px;height:80px;border-radius:10px;background:${item.dataset.gradient}"></div>`;
+    selectedPreview.innerHTML = `<img src="${item.dataset.image}" alt="${item.dataset.name}" style="width:80px;height:80px;border-radius:10px;object-fit:cover;">`;
   }
   if (selectedDetails) {
     selectedDetails.innerHTML = `
       <h4>${item.dataset.name}</h4>
-      <p class="selected-price">${item.dataset.price}</p>
       <p>AI 피팅을 시작하려면 아래 버튼을 눌러주세요.</p>
     `;
   }

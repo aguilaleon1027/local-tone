@@ -1,0 +1,108 @@
+2026-05-17 로커톤 작업내용
+
+금일 작업 시퀀스
+-----------------------------------------------------
+1단계 : Supabase 프로젝트 생성     
+      ↓
+2단계 : hanbok 테이블 생성
+      ↓
+3단계 : Storage 버킷 생성
+      ↓
+4단계 : 한복 사진 샘플 업로드 테스트
+      ↓
+5단계 : FastAPI 코드에 연결
+      ↓
+6단계 : AI 피팅 소프트웨어에 사진 적용 테스트
+-----------------------------------------------------
+1단계 : Supabase 프로젝트 생성
+1. 가입 및 프로젝트 생성
+
+supabase.com 접속
+GitHub 계정으로 로그인 (추천)
+New Project 클릭
+프로젝트 이름 : hanbok-db (예시)
+DB 비밀번호 설정 (나중에 필요하니 메모 필수)
+지역 : Northeast Asia (Seoul) 선택 → 속도 유리
+
+2. 완료 후 메모해둘 것
+Project URL : https://hczspanespbdbpadpiun.supabase.co/rest/v1/
+anon key   : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjenNwYW5lc3BiZGJwYWRwaXVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NTczMzgsImV4cCI6MjA5NDUzMzMzOH0.VZyFy3EyraFdEiTE1VeL1gL_m6Aa4o0APqbrTEBakAg
+DB password : localtone1234!!
+-----------------------------------------------------
+2단계 : hanbok 테이블 생성
+
+1.Supabase에서 테이블 만들기
+
+아래 URL로 이동하세요.
+https://supabase.com/dashboard/project/hczspanespbdbpadpiun/sql/new
+SQL 에디터가 열리면 아래 코드를 복사해서 붙여넣고 실행하세요.
+
+2.실행할 SQL
+
+sqlCREATE TABLE hanbok (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  category TEXT,
+  color TEXT,
+  size TEXT,
+  image_url TEXT NOT NULL,
+  thumbnail_url TEXT,
+  is_available BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT now()
+);
+
+3.실행 방법
+
+코드 붙여넣기
+      ↓
+우측 하단 RUN 버튼 클릭 (또는 Ctrl + Enter)
+      ↓
+"Success. No rows returned" 메시지 확인
+----------------------------------------------------
+3단계 : Storage 버킷 생성
+
+Storage 페이지로 이동
+https://supabase.com/dashboard/project/hczspanespbdbpadpiun/storage/buckets
+
+버킷 생성 순서
+New bucket 버튼 클릭
+      ↓
+Name : hanbok-images 입력
+      ↓
+Public bucket 토글 ON  ← 중요! (사진 URL로 외부 접근 가능하게)
+      ↓
+Save 클릭
+---------------------------------------------------
+4단계 : 한복 사진 샘플 업로드4단계 : 한복 사진 샘플 업로드
+
+사진 업로드 방법
+https://supabase.com/dashboard/project/hczspanespbdbpadpiun/storage/buckets/hanbok-images
+위 URL로 이동 후
+Upload files 버튼 클릭
+      ↓
+한복 사진 샘플 1~3장 선택
+      ↓
+업로드 완료 확인
+
+업로드 후 URL 확인 방법
+업로드된 파일 클릭
+      ↓
+오른쪽에 파일 정보 뜸
+      ↓
+"Get URL" 또는 "Copy URL" 클릭
+      ↓
+이런 형태의 URL 복사
+https://hczspanespbdbpadpiun.supabase.co/storage/v1/object/public/hanbok-images/파일명.jpg
+
+샘플 1 : https://hczspanespbdbpadpiun.supabase.co/storage/v1/object/public/hanbok-images/hanbok_1.jpg
+샘플 2 : https://hczspanespbdbpadpiun.supabase.co/storage/v1/object/public/hanbok-images/hanbok_2.jpg
+샘플 3 : https://hczspanespbdbpadpiun.supabase.co/storage/v1/object/public/hanbok-images/hanbok_3.jpg
+----------------------------------------------------
+5단계 : 업로드된 URL을 hanbok 테이블에 저장
+
+방법 1 : SQL로 직접 입력 
+https://supabase.com/dashboard/project/hczspanespbdbpadpiun/sql/new
+----------------------------------------------------
+6단계 : AI 피팅 소프트웨어 제작 및 사진 적용 테스트
+
+->  gemini api가 제대로 작동하지 않아서 이 부분 테스트 계속 해보면서 코드 수정 필요할 듯 , 데이터베이스를 만들고 그 경로를 저장해서 웹의 프론트엔드에 보이게 하는 것까지는 원활하게 잘 됨
