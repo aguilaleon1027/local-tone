@@ -1,0 +1,52 @@
+2025-05-24~25 작업 내용
+
+1. 예약 알림 이메일 (Resend API)
+routers/booking.py — DB 저장 제거, 이메일 발송으로 교체
+
+예약 요청 시 RESEND_API_KEY로 HTML 이메일 발송
+이메일에 이름·이메일·추가연락수단·예약날짜·한복 이름 + DB ID 포함
+RESEND_API_KEY 또는 NOTIFICATION_EMAIL 미설정 시 503 반환
+models.py — BookingCreate에 hanbok_title: Optional[str] 필드 추가
+
+config.py — RESEND_API_KEY, NOTIFICATION_EMAIL, KAKAO_REST_API_KEY 추가 + extra = "ignore" (VITE_ 환경변수 충돌 방지)
+
+2. 예약 폼 개선
+frontend/src/App.jsx
+
+탭 이름 "정보" → "예약" (Calendar 아이콘)
+전화번호 → 추가 연락수단 (optional, WhatsApp/Instagram/KakaoTalk 힌트)
+이메일 필수, 예약 날짜 필수 (한국/외국인 폼 모두)
+외국인 폼 날짜 레이블 해당 언어 형식으로 표시 (Year/Month/Day 등)
+하단 연도 하드코딩 2025 → {new Date().getFullYear()}
+3. 우드톤 컬러 테마
+frontend/tailwind.config.js — 커스텀 컬러 팔레트 추가
+
+
+#3D2314  옻칠 (메인 텍스트/버튼)
+#F5EDE0  한지 (배경)
+#B8975A  단청 금색 (강조)
+#FDFAF6  따뜻한 흰색
+frontend/src/index.css — body 배경·버튼·인풋·카드 스타일 우드톤으로 교체
+
+App.jsx — 모든 인라인 색상 우드톤 팔레트로 교체
+
+4. 주변 지도 탭 (Kakao Maps)
+frontend/.env — VITE_KAKAO_MAP_KEY 추가 (JS 키)
+
+routers/places.py — 신규 생성
+
+Kakao Local Search API → Category Search API (FD6/CE7/AT4)로 교체
+3페이지 동시 호출 (최대 45개)
+반경 3km (장안문 포함)
+lat·lng 파라미터 지원 (이 지역에서 검색용)
+main.py — places 라우터 등록
+
+frontend/src/components/NearbyMap.jsx — 신규 생성
+
+기능	내용
+카테고리	맛집·카페·관광지
+마커	숫자 SVG 핀 스타일 + Kakao Clusterer (근처 마커 자동 뭉침)
+이 지역 검색	지도 이동 후 버튼 클릭 → 현재 중심 기준 재검색
+장소 클릭	번호 마커 or 리스트 → 상세 카드 (주소·전화·카카오맵 링크)
+지도 직접 클릭	50m 반경 내 장소 자동 검색 ("지도 검색" 뱃지)
+전화 버튼	탭 시 바로 전화 연결

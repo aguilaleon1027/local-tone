@@ -31,7 +31,8 @@ class FittingResult(BaseModel):
 
 class BookingCreate(BaseModel):
     name: str
-    phone: str
+    phone: Optional[str] = None
     email: Optional[str] = None
     booking_date: Optional[str] = None
     hanbok_id: Optional[str] = None
+    hanbok_title: Optional[str] = None

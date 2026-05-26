@@ -4,22 +4,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg:      '#F8F8F8',
-        surface: '#FFFFFF',
-        s2:      '#F2F2F2',
-        s3:      '#E8E8E8',
-        border:  '#E0E0E0',
-        hwang:   '#111111',
-        hong:    '#111111',
-        'hong-deep': '#000000',
-        cheong:  '#111111',
-        nok:     '#111111',
-        gold:    '#111111',
-        ink:     '#111111',
-        cream:   '#111111',
-        muted:   '#555555',
-        stone:   '#999999',
-        dancheong: '#111111',
+        white:   '#FDFAF6',   // 따뜻한 흰색 (한지 느낌)
+        bg:      '#F5EDE0',   // 한지 배경
+        surface: '#FDFAF6',   // 카드/서피스
+        s2:      '#EDE0CF',   // 보조 배경
+        s3:      '#D4C4B0',   // 경계선
+        border:  '#DCCCB8',   // 소프트 경계선
+        hwang:   '#B8975A',   // 황금빛 (단청 accent)
+        gold:    '#B8975A',   // 금색 accent
+        ink:     '#3D2314',   // 옻칠 먹색
+        cream:   '#F5EDE0',   // 한지색
+        muted:   '#6B4C35',   // 중간 우드
+        stone:   '#9C8572',   // 뮤트 우드
+        dancheong: '#B8975A', // 단청 황금
       },
       fontFamily: {
         sans:  ['"Pretendard Variable"', 'Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],

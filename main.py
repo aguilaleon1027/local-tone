@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-from routers import hanbok, fitting, booking
+from routers import hanbok, fitting, booking, places
 from config import settings
 
 app = FastAPI(
@@ -23,6 +23,7 @@ app.add_middleware(
 app.include_router(hanbok.router, prefix="/api/hanbok", tags=["한복 카탈로그"])
 app.include_router(fitting.router, prefix="/api/fitting", tags=["AI 가상 피팅"])
 app.include_router(booking.router, prefix="/api/booking", tags=["예약"])
+app.include_router(places.router, prefix="/api/places", tags=["주변 장소"])
 
 @app.get("/health")
 def health():
