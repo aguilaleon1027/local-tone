@@ -5,9 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 const SHOP = { lat: 37.28421, lng: 127.01438 }
 
 const CATEGORIES = [
-  { id: '맛집', emoji: '🍽️' },
-  { id: '카페', emoji: '☕' },
-  { id: '관광지', emoji: '🏯' },
+  { id: '맛집' },
+  { id: '카페' },
+  { id: '관광지' },
 ]
 
 const CLICK_CATS = ['FD6', 'CE7', 'AT4', 'SW8', 'CT1', 'CS2', 'MT1', 'HP8']
@@ -128,7 +128,7 @@ export default function NearbyMap({ appKey }) {
           'padding:5px 10px', 'border-radius:20px', 'white-space:nowrap',
           'box-shadow:0 2px 10px rgba(0,0,0,0.3)', 'border:1.5px solid #FDFAF6',
         ].join(';')
-        shopEl.textContent = '📍 장금이 한복'
+        shopEl.textContent = '장금이 한복'
         new kakao.maps.CustomOverlay({ position: center, content: shopEl, map, yAnchor: 1 })
 
         /* 클러스터러 초기화 */
@@ -253,7 +253,7 @@ export default function NearbyMap({ appKey }) {
                 ? { background: '#3D2314', color: '#FDFAF6', fontWeight: 700 }
                 : { background: '#EDE0CF', color: '#6B4C35', fontWeight: 500 }}
             >
-              <span>{c.emoji}</span><span>{c.id}</span>
+              <span>{c.id}</span>
             </motion.button>
           ))}
         </div>

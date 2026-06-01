@@ -109,10 +109,29 @@ const CARD_STYLE = { background: '#FDFAF6', border: '1px solid #D4C4B0', borderR
    피팅 탭
 ══════════════════════════════════════ */
 /* ── 한복 선택 그리드 (예약 폼 공용) ── */
-function HanbokSelectGrid({ items, selected, onToggle, label, subLabel }) {
+// 카테고리 라벨 다국어
+const CAT_LABELS = {
+  ko: { all: '전체', '여성': '여자', '남성': '남자', '아동': '아동', empty: '해당 카테고리 한복이 없습니다' },
+  en: { all: 'All',  '여성': 'Women', '남성': 'Men', '아동': 'Children', empty: 'No hanbok in this category' },
+  zh: { all: '全部', '여성': '女性', '남성': '男性', '아동': '儿童',  empty: '该类别暂无韩服' },
+  ja: { all: '全て', '여성': '女性', '남성': '男性', '아동': '子ども', empty: 'このカテゴリの韓服はありません' },
+}
+
+function HanbokSelectGrid({ items, selected, onToggle, label, subLabel, lang = 'ko' }) {
+  const [catFilter, setCatFilter] = useState('all')
+  const cl = CAT_LABELS[lang] ?? CAT_LABELS.ko
+
+  // items에서 실제 카테고리 추출 (DB에 없는 카테고리 버튼은 자동으로 안 뜸)
+  const availableCats = [...new Set(items.map(i => i.category).filter(Boolean))].sort()
+
+  const filtered = catFilter === 'all'
+    ? items
+    : items.filter(item => item.category === catFilter)
+
   return (
     <div style={{ borderTop: '1px solid #D4C4B0', paddingTop: '14px' }}>
-      <div className="flex items-center justify-between mb-1">
+      {/* 헤더 */}
+      <div className="flex items-center justify-between mb-2">
         <p className="font-sans font-bold text-[12px]" style={{ color: '#3D2314' }}>{label}</p>
         {selected.length > 0 && (
           <span className="font-sans font-bold text-[10px] px-2 py-0.5 rounded-full" style={{ background: '#3D2314', color: '#FDFAF6' }}>
@@ -120,14 +139,44 @@ function HanbokSelectGrid({ items, selected, onToggle, label, subLabel }) {
           </span>
         )}
       </div>
-      <p className="font-sans text-[11px] mb-3" style={{ color: '#9C8572' }}>{subLabel}</p>
+      <p className="font-sans text-[11px] mb-2.5" style={{ color: '#9C8572' }}>{subLabel}</p>
+
+      {/* 카테고리 필터 (카테고리 2개 이상일 때만 표시) */}
+      {availableCats.length > 1 && (
+        <div className="flex gap-1.5 mb-3">
+          <button
+            onClick={() => setCatFilter('all')}
+            className="flex-none px-3 py-1 rounded-full text-[11px] font-sans transition-all duration-150"
+            style={catFilter === 'all'
+              ? { background: '#3D2314', color: '#FDFAF6', fontWeight: 700 }
+              : { background: '#EDE0CF', color: '#6B4C35', fontWeight: 500 }}
+          >{cl.all}</button>
+          {availableCats.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setCatFilter(cat)}
+              className="flex-none px-3 py-1 rounded-full text-[11px] font-sans transition-all duration-150"
+              style={catFilter === cat
+                ? { background: '#3D2314', color: '#FDFAF6', fontWeight: 700 }
+                : { background: '#EDE0CF', color: '#6B4C35', fontWeight: 500 }}
+            >
+              {cl[cat] ?? cat}
+            </button>
+          ))}
+        </div>
+      )}
+
       {items.length === 0 ? (
         <div className="flex items-center justify-center py-8">
           <div className="w-5 h-5 border-2 rounded-full animate-spin" style={{ borderColor: '#D4C4B0', borderTopColor: '#3D2314' }} />
         </div>
+      ) : filtered.length === 0 ? (
+        <div className="flex items-center justify-center py-6">
+          <p className="text-[12px]" style={{ color: '#9C8572' }}>{cl.empty}</p>
+        </div>
       ) : (
-        <div className="grid grid-cols-2 gap-2">
-          {items.map((item) => {
+        <div className="grid grid-cols-2 gap-2 overflow-y-auto no-scrollbar" style={{ maxHeight: '220px' }}>
+          {filtered.map((item) => {
             const isSelected = selected.some((h) => h.id === item.id)
             return (
               <motion.div
@@ -137,7 +186,7 @@ function HanbokSelectGrid({ items, selected, onToggle, label, subLabel }) {
                 className="relative rounded-xl overflow-hidden cursor-pointer"
                 style={{ outline: isSelected ? '2.5px solid #3D2314' : '2.5px solid transparent', outlineOffset: '-1px' }}
               >
-                <div className="aspect-[3/4] relative" style={{ background: '#EDE0CF' }}>
+                <div className="relative" style={{ height: '160px', background: '#EDE0CF' }}>
                   <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
                   <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.65), transparent 55%)' }} />
                   {isSelected && (
@@ -187,54 +236,95 @@ async function submitBookingData(form, selectedHanboks, setSubmitting, setDone, 
   }
 }
 
+/* 히어로 슬라이드 이미지 — URL 추가 시 여기에 넣기 */
+const STATIC_SLIDES = [
+  { url: 'http://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210410_183%2F1617984225133UDnEr_PNG%2Fsw7FbEZnt5RhnWJG_pzC_sjs.png',  fit: 'cover' },
+  { url: 'https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20260412_89%2F1775952791576HXL6G_JPEG%2F1000070560.jpg',                  fit: 'cover' },
+  { url: 'https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20210410_242%2F1617984225323q0lnM_PNG%2FCM887Rgk__STf_Guf7nrDLyy.png',    fit: 'contain' },
+  { url: 'https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20260412_148%2F1775952665094iXInt_JPEG%2F1000071249.jpg',                  fit: 'cover' },
+]
+
 function FittingTab({ catalog }) {
+  const slides = STATIC_SLIDES
+
+  const [idx,     setIdx]     = useState(0)
+  const [visible, setVisible] = useState(true)
+
+  const currentSlide = slides[idx] ?? null
+
+  useEffect(() => {
+    if (slides.length <= 1) return
+    const t = setInterval(() => {
+      setVisible(false)
+      setTimeout(() => {
+        setIdx(i => (i + 1) % slides.length)
+        setVisible(true)
+      }, 400)
+    }, 4000)
+    return () => clearInterval(t)
+  }, [slides.length])
+
   return (
-    <div className="h-full overflow-y-auto no-scrollbar bg-white">
-      {/* 히어로 */}
-      <div className="px-5 pt-8 pb-6 relative overflow-hidden" style={DIV}>
-        {/* 배경 마름모 패턴 (단청 느낌) */}
-        <div className="absolute inset-0 pointer-events-none" style={{
-          backgroundImage: `linear-gradient(45deg, rgba(184,151,90,0.12) 1px, transparent 1px),
-                            linear-gradient(-45deg, rgba(184,151,90,0.12) 1px, transparent 1px)`,
-          backgroundSize: '18px 18px',
+    <div className="h-full overflow-y-auto no-scrollbar" style={{ background: '#F5EDE0' }}>
+
+      {/* ── 히어로 슬라이드쇼 ── */}
+      <div className="relative overflow-hidden" style={{ height: '300px' }}>
+
+        {/* 배경 이미지 (페이드 전환) */}
+        {currentSlide
+          ? <img
+              src={currentSlide.url}
+              alt="장금이 한복"
+              className="absolute inset-0 w-full h-full"
+              style={{ objectFit: currentSlide.fit, transition: 'opacity 0.4s ease', opacity: visible ? 1 : 0 }}
+            />
+          : <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg, #3D2314, #6B4C35)' }} />
+        }
+
+        {/* 어두운 그라데이션 오버레이 */}
+        <div className="absolute inset-0" style={{
+          background: 'linear-gradient(to top, rgba(30,15,5,0.88) 0%, rgba(30,15,5,0.45) 55%, rgba(30,15,5,0.15) 100%)',
         }} />
 
-        {/* 장식 태그 */}
-        <div className="flex items-center gap-2 mb-4">
-          <span style={{ display: 'inline-block', width: '16px', height: '1px', background: '#B8975A', flexShrink: 0 }} />
-          <p className="font-serif text-[10px]" style={{ color: '#B8975A', letterSpacing: '0.15em', whiteSpace: 'nowrap' }}>
-            장금이 한복 · {new Date().getFullYear()}
+        {/* 텍스트 */}
+        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 z-10">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-serif text-[11px]" style={{ color: '#FDFAF6', letterSpacing: '0.08em' }}>장금이 한복</span>
+            <span className="font-serif text-[10px]" style={{ color: 'rgba(255,255,255,0.6)' }}>· 수원 화성 행궁</span>
+          </div>
+          <h1 className="font-serif font-bold leading-[1.22]" style={{ fontSize: '26px', color: '#FDFAF6' }}>
+            한복을 입고<br />화성을 거닐어보세요
+          </h1>
+          <p className="font-sans text-[12px] mt-1" style={{ color: 'rgba(255,255,255,0.65)', letterSpacing: '-0.01em' }}>
+            전통 한복 대여 · AI 피팅 체험
           </p>
-          <span style={{ display: 'inline-block', width: '16px', height: '1px', background: '#B8975A', flexShrink: 0 }} />
         </div>
 
-        <h1 className="font-serif font-bold leading-[1.22]" style={{ fontSize: '30px', color: '#3D2314' }}>
-          나에게 어울리는<br />한복을 찾아보세요
-        </h1>
-
-        <p className="font-sans text-[13px] mt-3" style={{ color: '#9C8572', letterSpacing: '-0.01em' }}>
-          30년 전통 · 수원 화성 행궁 직영
-        </p>
-
-        {/* 통계 */}
-        <div className="mt-6">
-          <div style={{ height: '2px', borderRadius: '2px', background: DANCHEONG_STRIPE, marginBottom: '16px' }} />
-          <div className="flex">
-            {[['2,000+', '피팅 완료'], ['30년', '전통 경력'], ['98%', '만족도']].map(([n, l], idx) => (
-              <div
-                key={l}
-                className={`flex-1 ${idx > 0 ? 'pl-4' : ''}`}
-                style={idx > 0 ? { borderLeft: '1px solid #D4C4B0' } : {}}
-              >
-                <p className="font-serif font-bold text-[20px]" style={{ color: '#3D2314' }}>{n}</p>
-                <p className="font-sans text-[10px] font-medium uppercase tracking-wide mt-0.5" style={{ color: '#9C8572' }}>{l}</p>
-              </div>
+        {/* 슬라이드 인디케이터 */}
+        {slides.length > 1 && (
+          <div className="absolute bottom-4 right-4 flex items-center gap-1.5 z-10">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => { setIdx(i); setVisible(true) }}
+                style={{
+                  height: '4px',
+                  borderRadius: '2px',
+                  transition: 'all 0.3s ease',
+                  width: i === idx ? '18px' : '4px',
+                  background: i === idx ? '#FDFAF6' : 'rgba(255,255,255,0.35)',
+                }}
+              />
             ))}
           </div>
-        </div>
+        )}
       </div>
 
-      <div className="px-4 pt-4 pb-6 bg-bg">
+      {/* 단청 구분선 */}
+      <div style={{ height: '3px', background: DANCHEONG_STRIPE }} />
+
+      {/* ── 피팅 위저드 ── */}
+      <div className="px-4 pt-4 pb-6">
         <FittingWizard catalog={catalog} />
       </div>
     </div>
@@ -420,7 +510,7 @@ function InfoTab({ catalog }) {
                   </div>
                 </div>
                 <HanbokSelectGrid items={catalog} selected={intlSelectedHanboks} onToggle={toggleIntlHanbok}
-                  label={t.hanbokLabel} subLabel={t.hanbokSub} />
+                  label={t.hanbokLabel} subLabel={t.hanbokSub} lang={lang} />
                 <motion.button type="submit" whileTap={{ scale: 0.98 }}
                   disabled={intlSubmitting || !intlForm.name || !intlForm.email || !intlForm.booking_date}
                   className="btn-gold w-full justify-center disabled:opacity-40">
@@ -556,19 +646,23 @@ export default function App() {
     <div className="flex flex-col" style={{ height: '100dvh', maxWidth: '480px', margin: '0 auto', background: '#F5EDE0' }}>
 
       {/* 헤더 */}
-      <header className="flex-none flex items-center justify-between px-5 safe-top bg-white" style={{ height: '52px' }}>
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: '#3D2314' }}>
-            <span className="font-serif text-white text-[11px] font-bold">장</span>
-          </div>
-          <span className="font-serif text-[15px] font-bold" style={{ color: '#3D2314', letterSpacing: '-0.02em' }}>
+      <header className="flex-none flex items-center justify-between px-5 safe-top bg-white" style={{ height: '60px' }}>
+        <div className="flex flex-col gap-0.5">
+          <span className="font-serif font-bold" style={{ fontSize: '16px', color: '#3D2314', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
             장금이 한복
           </span>
+          <span className="font-sans" style={{ fontSize: '10px', color: '#9C8572', letterSpacing: '0.04em' }}>
+            Janggeum Hanbok · Since 2012
+          </span>
         </div>
-        <span className="font-sans text-[10px] font-semibold px-2.5 py-1 rounded-full"
-          style={{ background: '#EDE0CF', color: '#8B6344', letterSpacing: '-0.01em' }}>
-          수원 화성 행궁
-        </span>
+        <div className="flex flex-col items-end gap-0.5">
+          <span className="font-serif font-bold" style={{ fontSize: '13px', color: '#3D2314', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+            수원 화성 행궁
+          </span>
+          <span className="font-sans" style={{ fontSize: '10px', color: '#9C8572', letterSpacing: '0.04em' }}>
+            Hwaseong Haenggung
+          </span>
+        </div>
       </header>
       {/* 단청 헤더 구분선 */}
       <div className="flex-none" style={{ height: '3px', background: DANCHEONG_STRIPE }} />

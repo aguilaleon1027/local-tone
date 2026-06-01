@@ -88,7 +88,7 @@ export default function Contact() {
                   <CheckCircle size={52} className="text-hwang" strokeWidth={1.5} />
                   <h3 className="font-serif text-2xl font-bold text-cream">상담 신청 완료!</h3>
                   <p className="font-sans text-muted text-sm leading-relaxed">
-                    빠른 시간 내에 연락드리겠습니다.<br />감사합니다 😊
+                    빠른 시간 내에 연락드리겠습니다.<br />감사합니다.
                   </p>
                   <button onClick={() => { setSent(false); setForm({ name: '', phone: '', occasion: '', message: '' }) }} className="btn-outline mt-2">
                     다시 문의하기

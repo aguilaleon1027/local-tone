@@ -12,25 +12,32 @@ const slide = {
 function StepIndicator({ current, total = 3 }) {
   const labels = ['사진 업로드', '한복 선택', '결과 확인']
   return (
-    <div className="flex items-center justify-center mb-8">
+    <div className="flex items-center justify-center mb-7">
       {Array.from({ length: total }).map((_, i) => (
         <div key={i} className="flex items-center">
           <div className="flex flex-col items-center gap-1.5">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-sans text-sm font-semibold transition-all duration-300 ${
-              i < current  ? 'bg-hwang text-white' :
-              i === current ? 'border-2 border-hwang text-hwang bg-hwang/8' :
-                              'border border-stone/40 text-stone bg-surface'
-            }`}>
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center font-serif text-sm font-bold transition-all duration-300"
+              style={
+                i < current
+                  ? { background: '#B8975A', color: '#FDFAF6', boxShadow: '0 2px 8px rgba(184,151,90,0.4)' }
+                  : i === current
+                  ? { background: '#FDFAF6', color: '#B8975A', border: '2px solid #B8975A' }
+                  : { background: '#F5EDE0', color: '#C8B49A', border: '1.5px solid #D4C4B0' }
+              }
+            >
               {i < current ? <Check size={14} strokeWidth={2.5} /> : i + 1}
             </div>
-            <span className={`font-sans text-[10px] whitespace-nowrap font-medium ${
-              i === current ? 'text-hwang' : i < current ? 'text-muted' : 'text-stone'
-            }`}>{labels[i]}</span>
+            <span
+              className="font-sans text-[9px] whitespace-nowrap"
+              style={{ color: i === current ? '#B8975A' : i < current ? '#6B4C35' : '#C8B49A', fontWeight: i === current ? 700 : 400 }}
+            >{labels[i]}</span>
           </div>
           {i < total - 1 && (
-            <div className={`w-16 h-px mb-5 mx-2 transition-all duration-500 ${
-              i < current ? 'bg-hwang' : 'bg-stone/20'
-            }`} />
+            <div
+              className="w-14 mx-1.5 mb-5 transition-all duration-500"
+              style={{ height: '1.5px', background: i < current ? '#B8975A' : '#D4C4B0' }}
+            />
           )}
         </div>
       ))}
@@ -110,12 +117,15 @@ function Step1({ onNext }) {
       </div>
 
       {/* 팁 카드 */}
-      <div className="card p-4">
-        <p className="font-sans text-[11px] font-semibold text-muted uppercase tracking-wider mb-2">좋은 결과를 위한 팁</p>
+      <div className="p-4 rounded-xl" style={{ background: '#F5EDE0', border: '1px solid #D4C4B0' }}>
+        <div className="flex items-center gap-2 mb-2.5">
+          <div style={{ width: '3px', height: '14px', background: '#B8975A', borderRadius: '2px', flexShrink: 0 }} />
+          <p className="font-serif text-[11px] font-bold" style={{ color: '#3D2314' }}>좋은 결과를 위한 팁</p>
+        </div>
         <ul className="space-y-1.5">
           {['정면을 바라보는 전신 사진', '밝고 깨끗한 배경', '몸 전체가 나오는 구도'].map((t) => (
-            <li key={t} className="flex items-center gap-2 font-sans text-xs text-muted">
-              <span className="w-1 h-1 rounded-full bg-hwang flex-shrink-0" />
+            <li key={t} className="flex items-center gap-2 font-sans text-[11px]" style={{ color: '#6B4C35' }}>
+              <span className="font-serif flex-shrink-0" style={{ color: '#B8975A', fontSize: '9px' }}>◈</span>
               {t}
             </li>
           ))}
@@ -429,7 +439,7 @@ export default function FittingWizard({ catalog = [] }) {
   const reset = () => { setStep(0); setPhotoId(null); setHanbok(null); setPrefillId(null) }
 
   return (
-    <div className="card p-5">
+    <div className="p-5 rounded-2xl" style={{ background: '#FDFAF6', border: '1px solid #D4C4B0' }}>
       <StepIndicator current={step} />
       <AnimatePresence mode="wait" custom={dir}>
         <motion.div key={step} custom={dir} variants={slide} initial="enter" animate="center" exit="exit">
