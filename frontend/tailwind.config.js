@@ -4,19 +4,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        white:   '#FDFAF6',   // 따뜻한 흰색 (한지 느낌)
-        bg:      '#F5EDE0',   // 한지 배경
-        surface: '#FDFAF6',   // 카드/서피스
-        s2:      '#EDE0CF',   // 보조 배경
-        s3:      '#D4C4B0',   // 경계선
-        border:  '#DCCCB8',   // 소프트 경계선
-        hwang:   '#B8975A',   // 황금빛 (단청 accent)
-        gold:    '#B8975A',   // 금색 accent
-        ink:     '#3D2314',   // 옻칠 먹색
-        cream:   '#F5EDE0',   // 한지색
-        muted:   '#6B4C35',   // 중간 우드
-        stone:   '#9C8572',   // 뮤트 우드
-        dancheong: '#B8975A', // 단청 황금
+        white:   '#FFFFFF',
+        bg:      '#EEF3FF',    // 매우 연한 파란 배경 (원래 F5EDE0 역할)
+        surface: '#FFFFFF',    // 카드
+        s2:      '#E0EEFF',    // 보조 배경 (원래 EDE0CF 역할)
+        s3:      '#BDD6FF',    // 경계선 (원래 D4C4B0 역할)
+        border:  '#BDD6FF',    // 소프트 경계선
+        hwang:   '#015DFE',    // accent (원래 B8975A 역할)
+        gold:    '#015DFE',
+        ink:     '#0022FE',    // 메인 (원래 3D2314 역할)
+        cream:   '#EEF3FF',
+        muted:   '#4186FF',    // 중간 (원래 6B4C35 역할)
+        stone:   '#4186FF',    // 뮤트 (원래 9C8572 역할)
+        dancheong: '#015DFE',
       },
       fontFamily: {
         sans:  ['"Pretendard Variable"', 'Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
@@ -28,18 +28,9 @@ export default {
         'float':   'float 6s ease-in-out infinite',
       },
       keyframes: {
-        marquee: {
-          '0%':   { transform: 'translateX(0)' },
-          '100%': { transform: 'translateX(-50%)' },
-        },
-        shimmer: {
-          '0%':   { backgroundPosition: '0% center' },
-          '100%': { backgroundPosition: '200% center' },
-        },
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%':      { transform: 'translateY(-8px)' },
-        },
+        marquee: { '0%': { transform: 'translateX(0)' }, '100%': { transform: 'translateX(-50%)' } },
+        shimmer: { '0%': { backgroundPosition: '0% center' }, '100%': { backgroundPosition: '200% center' } },
+        float:   { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-8px)' } },
       },
     },
   },

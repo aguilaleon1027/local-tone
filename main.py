@@ -1,5 +1,17 @@
-import ssl, certifi
-ssl._create_default_https_context = lambda: ssl.create_default_context(cafile=certifi.where())
+import certifi, httpx
+
+# Windows에서 httpx SSL 인증서 오류 패치
+_orig_client = httpx.Client.__init__
+def _patched_client(self, *args, **kwargs):
+    kwargs.setdefault('verify', certifi.where())
+    _orig_client(self, *args, **kwargs)
+httpx.Client.__init__ = _patched_client
+
+_orig_async = httpx.AsyncClient.__init__
+def _patched_async(self, *args, **kwargs):
+    kwargs.setdefault('verify', certifi.where())
+    _orig_async(self, *args, **kwargs)
+httpx.AsyncClient.__init__ = _patched_async
 
 from pathlib import Path
 from fastapi import FastAPI

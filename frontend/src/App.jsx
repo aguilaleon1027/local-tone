@@ -65,12 +65,12 @@ function SectionHeader({ title, sub }) {
   return (
     <div className="px-5 pt-6 pb-3">
       <div className="flex items-start gap-2.5">
-        <div style={{ width: '3px', height: '18px', marginTop: '2px', background: '#B8975A', borderRadius: '2px', flexShrink: 0 }} />
+        <div style={{ width: '3px', height: '18px', marginTop: '2px', background: '#015DFE', borderRadius: '2px', flexShrink: 0 }} />
         <div>
-          <h2 className="font-serif font-bold text-[17px]" style={{ color: '#3D2314', letterSpacing: '0' }}>
+          <h2 className="font-serif font-bold text-[17px]" style={{ color: '#0022FE', letterSpacing: '0' }}>
             {title}
           </h2>
-          {sub && <p className="font-sans text-[11px] mt-0.5" style={{ color: '#9C8572' }}>{sub}</p>}
+          {sub && <p className="font-sans text-[11px] mt-0.5" style={{ color: '#4186FF' }}>{sub}</p>}
         </div>
       </div>
     </div>
@@ -79,11 +79,11 @@ function SectionHeader({ title, sub }) {
 
 /* ── 단청 스트라이프 패턴 ── */
 const DANCHEONG_STRIPE = `repeating-linear-gradient(90deg,
-  #B8975A 0px, #B8975A 6px,
-  #3D2314 6px, #3D2314 9px,
-  #D4C4B0 9px, #D4C4B0 11px,
-  #3D2314 11px, #3D2314 14px,
-  #B8975A 14px, #B8975A 20px
+  #0022FE 0px, #0022FE 6px,
+  #015DFE 6px, #015DFE 9px,
+  #BDD6FF 9px, #BDD6FF 11px,
+  #015DFE 11px, #015DFE 14px,
+  #0022FE 14px, #0022FE 20px
 )`
 
 /* ── 전통 장식 구분선 ── */
@@ -92,9 +92,9 @@ function TradDivider() {
     <div>
       <div style={{ height: '3px', background: DANCHEONG_STRIPE }} />
       <div className="flex items-center gap-3 px-5 py-2">
-        <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, transparent, #D4C4B0)' }} />
-        <span className="font-serif" style={{ color: '#B8975A', fontSize: '11px', lineHeight: 1 }}>◈</span>
-        <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to left, transparent, #D4C4B0)' }} />
+        <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, transparent, #BDD6FF)' }} />
+        <span className="font-serif" style={{ color: '#015DFE', fontSize: '11px', lineHeight: 1 }}>◈</span>
+        <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to left, transparent, #BDD6FF)' }} />
       </div>
       <div style={{ height: '3px', background: DANCHEONG_STRIPE }} />
     </div>
@@ -102,8 +102,8 @@ function TradDivider() {
 }
 
 /* ── 구분선 ── */
-const DIV = { borderBottom: '1px solid #D4C4B0' }
-const CARD_STYLE = { background: '#FDFAF6', border: '1px solid #D4C4B0', borderRadius: '12px' }
+const DIV = { borderBottom: '1px solid #BDD6FF' }
+const CARD_STYLE = { background: '#FFFFFF', border: '1px solid #BDD6FF', borderRadius: '12px' }
 
 /* ══════════════════════════════════════
    피팅 탭
@@ -129,17 +129,17 @@ function HanbokSelectGrid({ items, selected, onToggle, label, subLabel, lang = '
     : items.filter(item => item.category === catFilter)
 
   return (
-    <div style={{ borderTop: '1px solid #D4C4B0', paddingTop: '14px' }}>
+    <div style={{ borderTop: '1px solid #BDD6FF', paddingTop: '14px' }}>
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-2">
-        <p className="font-sans font-bold text-[12px]" style={{ color: '#3D2314' }}>{label}</p>
+        <p className="font-sans font-bold text-[12px]" style={{ color: '#0022FE' }}>{label}</p>
         {selected.length > 0 && (
-          <span className="font-sans font-bold text-[10px] px-2 py-0.5 rounded-full" style={{ background: '#3D2314', color: '#FDFAF6' }}>
+          <span className="font-sans font-bold text-[10px] px-2 py-0.5 rounded-full" style={{ background: '#0022FE', color: '#FFFFFF' }}>
             {selected.length}
           </span>
         )}
       </div>
-      <p className="font-sans text-[11px] mb-2.5" style={{ color: '#9C8572' }}>{subLabel}</p>
+      <p className="font-sans text-[11px] mb-2.5" style={{ color: '#4186FF' }}>{subLabel}</p>
 
       {/* 카테고리 필터 (카테고리 2개 이상일 때만 표시) */}
       {availableCats.length > 1 && (
@@ -148,8 +148,8 @@ function HanbokSelectGrid({ items, selected, onToggle, label, subLabel, lang = '
             onClick={() => setCatFilter('all')}
             className="flex-none px-3 py-1 rounded-full text-[11px] font-sans transition-all duration-150"
             style={catFilter === 'all'
-              ? { background: '#3D2314', color: '#FDFAF6', fontWeight: 700 }
-              : { background: '#EDE0CF', color: '#6B4C35', fontWeight: 500 }}
+              ? { background: '#0022FE', color: '#FFFFFF', fontWeight: 700 }
+              : { background: '#FFFFFF', color: '#4186FF', fontWeight: 500, border: '1px solid #BDD6FF' }}
           >{cl.all}</button>
           {availableCats.map(cat => (
             <button
@@ -157,8 +157,8 @@ function HanbokSelectGrid({ items, selected, onToggle, label, subLabel, lang = '
               onClick={() => setCatFilter(cat)}
               className="flex-none px-3 py-1 rounded-full text-[11px] font-sans transition-all duration-150"
               style={catFilter === cat
-                ? { background: '#3D2314', color: '#FDFAF6', fontWeight: 700 }
-                : { background: '#EDE0CF', color: '#6B4C35', fontWeight: 500 }}
+                ? { background: '#0022FE', color: '#FFFFFF', fontWeight: 700 }
+                : { background: '#FFFFFF', color: '#4186FF', fontWeight: 500, border: '1px solid #BDD6FF' }}
             >
               {cl[cat] ?? cat}
             </button>
@@ -168,11 +168,11 @@ function HanbokSelectGrid({ items, selected, onToggle, label, subLabel, lang = '
 
       {items.length === 0 ? (
         <div className="flex items-center justify-center py-8">
-          <div className="w-5 h-5 border-2 rounded-full animate-spin" style={{ borderColor: '#D4C4B0', borderTopColor: '#3D2314' }} />
+          <div className="w-5 h-5 border-2 rounded-full animate-spin" style={{ borderColor: '#BDD6FF', borderTopColor: '#0022FE' }} />
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex items-center justify-center py-6">
-          <p className="text-[12px]" style={{ color: '#9C8572' }}>{cl.empty}</p>
+          <p className="text-[12px]" style={{ color: '#4186FF' }}>{cl.empty}</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-2 overflow-y-auto no-scrollbar" style={{ maxHeight: '220px' }}>
@@ -184,14 +184,14 @@ function HanbokSelectGrid({ items, selected, onToggle, label, subLabel, lang = '
                 whileTap={{ scale: 0.97 }}
                 onClick={() => onToggle(item)}
                 className="relative rounded-xl overflow-hidden cursor-pointer"
-                style={{ outline: isSelected ? '2.5px solid #3D2314' : '2.5px solid transparent', outlineOffset: '-1px' }}
+                style={{ outline: isSelected ? '2.5px solid #0022FE' : '2.5px solid transparent', outlineOffset: '-1px' }}
               >
-                <div className="relative" style={{ height: '160px', background: '#EDE0CF' }}>
+                <div className="relative" style={{ height: '160px', background: '#E0EEFF' }}>
                   <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
                   <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.65), transparent 55%)' }} />
                   {isSelected && (
-                    <div className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: '#3D2314' }}>
-                      <Check size={11} style={{ color: '#FDFAF6' }} strokeWidth={3} />
+                    <div className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: '#0022FE' }}>
+                      <Check size={11} style={{ color: '#FFFFFF' }} strokeWidth={3} />
                     </div>
                   )}
                   <div className="absolute bottom-0 inset-x-0 p-2">
@@ -265,7 +265,7 @@ function FittingTab({ catalog }) {
   }, [slides.length])
 
   return (
-    <div className="h-full overflow-y-auto no-scrollbar" style={{ background: '#F5EDE0' }}>
+    <div className="h-full overflow-y-auto no-scrollbar" style={{ background: '#EEF3FF' }}>
 
       {/* ── 히어로 슬라이드쇼 ── */}
       <div className="relative overflow-hidden" style={{ height: '300px' }}>
@@ -278,7 +278,7 @@ function FittingTab({ catalog }) {
               className="absolute inset-0 w-full h-full"
               style={{ objectFit: currentSlide.fit, transition: 'opacity 0.4s ease', opacity: visible ? 1 : 0 }}
             />
-          : <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg, #3D2314, #6B4C35)' }} />
+          : <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg, #0022FE, #4186FF)' }} />
         }
 
         {/* 어두운 그라데이션 오버레이 */}
@@ -289,10 +289,10 @@ function FittingTab({ catalog }) {
         {/* 텍스트 */}
         <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 z-10">
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-serif text-[11px]" style={{ color: '#FDFAF6', letterSpacing: '0.08em' }}>장금이 한복</span>
+            <span className="font-serif text-[11px]" style={{ color: '#FFFFFF', letterSpacing: '0.08em' }}>장금이 한복</span>
             <span className="font-serif text-[10px]" style={{ color: 'rgba(255,255,255,0.6)' }}>· 수원 화성 행궁</span>
           </div>
-          <h1 className="font-serif font-bold leading-[1.22]" style={{ fontSize: '26px', color: '#FDFAF6' }}>
+          <h1 className="font-serif font-bold leading-[1.22]" style={{ fontSize: '26px', color: '#FFFFFF' }}>
             한복을 입고<br />화성을 거닐어보세요
           </h1>
           <p className="font-sans text-[12px] mt-1" style={{ color: 'rgba(255,255,255,0.65)', letterSpacing: '-0.01em' }}>
@@ -312,7 +312,7 @@ function FittingTab({ catalog }) {
                   borderRadius: '2px',
                   transition: 'all 0.3s ease',
                   width: i === idx ? '18px' : '4px',
-                  background: i === idx ? '#FDFAF6' : 'rgba(255,255,255,0.35)',
+                  background: i === idx ? '#FFFFFF' : 'rgba(255,255,255,0.35)',
                 }}
               />
             ))}
@@ -343,7 +343,7 @@ function CollectionTab({ onFit, catalog }) {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* 카테고리 필터 */}
-      <div className="flex-none px-4 py-2.5 bg-white" style={DIV}>
+      <div className="flex-none px-4 py-2.5" style={{ background: '#FFFFFF', borderBottom: '1px solid #BDD6FF' }}>
         <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
           {['전체', ...cats].map((c) => (
             <motion.button
@@ -352,8 +352,8 @@ function CollectionTab({ onFit, catalog }) {
               whileTap={{ scale: 0.94 }}
               className="flex-none px-3.5 py-1.5 rounded-full text-[12px] whitespace-nowrap transition-all duration-150"
               style={active === c
-                ? { background: '#3D2314', color: '#FDFAF6', fontWeight: 700, letterSpacing: '-0.01em' }
-                : { background: '#EDE0CF', color: '#6B4C35', fontWeight: 500, letterSpacing: '-0.01em' }}
+                ? { background: '#0022FE', color: '#FFFFFF', fontWeight: 700, letterSpacing: '-0.01em' }
+                : { background: '#FFFFFF', color: '#4186FF', fontWeight: 500, letterSpacing: '-0.01em', border: '1px solid #BDD6FF' }}
             >
               {c}
             </motion.button>
@@ -362,8 +362,8 @@ function CollectionTab({ onFit, catalog }) {
       </div>
 
       {/* 무신사 격자 그리드 */}
-      <div className="flex-1 overflow-y-auto no-scrollbar bg-bg">
-        <div className="grid grid-cols-2 gap-px" style={{ background: '#D4C4B0' }}>
+      <div className="flex-1 overflow-y-auto no-scrollbar" style={{ background: '#EEF3FF' }}>
+        <div className="grid grid-cols-2 gap-2 p-2">
           <AnimatePresence>
             {filtered.map((item, idx) => (
               <motion.div
@@ -372,11 +372,11 @@ function CollectionTab({ onFit, catalog }) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.15, delay: idx * 0.02 }}
-                className="bg-white p-3"
+                className="bg-white p-3 rounded-xl overflow-hidden"
               >
                 {/* 썸네일 */}
                 <div className="aspect-[3/4] rounded-lg overflow-hidden relative mb-2.5"
-                  style={{ background: '#EDE0CF' }}>
+                  style={{ background: '#E0EEFF' }}>
                   {item.image_url && (
                     <img src={item.image_url} alt={item.title} className="absolute inset-0 w-full h-full object-cover" />
                   )}
@@ -389,7 +389,7 @@ function CollectionTab({ onFit, catalog }) {
                   </span>
                 </div>
 
-                <p className="font-sans font-bold text-[13px] leading-tight" style={{ color: '#3D2314', letterSpacing: '-0.02em' }}>
+                <p className="font-sans font-bold text-[13px] leading-tight" style={{ color: '#0022FE', letterSpacing: '-0.02em' }}>
                   {item.title}
                 </p>
 
@@ -397,12 +397,16 @@ function CollectionTab({ onFit, catalog }) {
                   whileTap={{ scale: 0.97 }}
                   onClick={() => onFit(item.id)}
                   className="mt-2.5 w-full py-2 text-[11px] font-bold rounded-lg transition-all duration-150 active:bg-black active:text-white"
-                  style={{ border: '1.5px solid #3D2314', color: '#3D2314', letterSpacing: '-0.01em', background: 'transparent' }}
+                  style={{ border: '1.5px solid #0022FE', color: '#0022FE', letterSpacing: '-0.01em', background: 'transparent' }}
                 >
                   피팅해보기
                 </motion.button>
               </motion.div>
             ))}
+            {/* 홀수 개일 때 빈 카드로 균형 맞추기 */}
+            {filtered.length % 2 !== 0 && (
+              <div className="rounded-xl" style={{ background: '#EEF3FF' }} />
+            )}
           </AnimatePresence>
         </div>
       </div>
@@ -451,20 +455,20 @@ function InfoTab({ catalog }) {
       <div className="px-5 pt-5 pb-1">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Globe size={15} style={{ color: '#3D2314' }} />
-            <h2 className="font-sans font-bold text-[17px]" style={{ color: '#3D2314', letterSpacing: '-0.03em' }}>
+            <Globe size={15} style={{ color: '#0022FE' }} />
+            <h2 className="font-sans font-bold text-[17px]" style={{ color: '#0022FE', letterSpacing: '-0.03em' }}>
               {t.title}
             </h2>
           </div>
-          <div className="flex gap-px overflow-hidden" style={{ border: '1.5px solid #DCCCB8', borderRadius: '8px' }}>
+          <div className="flex gap-px overflow-hidden" style={{ border: '1.5px solid #BDD6FF', borderRadius: '8px' }}>
             {Object.entries(I18N).map(([k, v]) => (
               <button
                 key={k}
                 onClick={() => { setLang(k); setIntlDone(false) }}
                 className="px-2.5 py-1 text-[11px] font-bold transition-all duration-150"
                 style={lang === k
-                  ? { background: '#3D2314', color: '#FDFAF6' }
-                  : { background: '#FDFAF6', color: '#9C8572' }}
+                  ? { background: '#0022FE', color: '#FFFFFF' }
+                  : { background: '#FFFFFF', color: '#4186FF' }}
               >
                 {v.short}
               </button>
@@ -473,20 +477,20 @@ function InfoTab({ catalog }) {
         </div>
 
         <div className="rounded-xl p-4" style={CARD_STYLE}>
-          <p className="font-sans text-[11px] mb-4" style={{ color: '#9C8572' }}>{t.subtitle}</p>
+          <p className="font-sans text-[11px] mb-4" style={{ color: '#4186FF' }}>{t.subtitle}</p>
           <AnimatePresence mode="wait">
             {intlDone ? (
               <motion.div key="intl-done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
                 className="flex flex-col items-center py-8 gap-2">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-1" style={{ background: '#EDE0CF' }}>
-                  <Check size={22} style={{ color: '#3D2314' }} strokeWidth={2.5} />
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-1" style={{ background: '#E0EEFF' }}>
+                  <Check size={22} style={{ color: '#0022FE' }} strokeWidth={2.5} />
                 </div>
-                <p className="font-sans font-bold text-[15px]" style={{ color: '#3D2314', letterSpacing: '-0.02em' }}>{t.success}</p>
-                <p className="font-sans text-[12px] text-center" style={{ color: '#9C8572' }}>{t.successSub}</p>
+                <p className="font-sans font-bold text-[15px]" style={{ color: '#0022FE', letterSpacing: '-0.02em' }}>{t.success}</p>
+                <p className="font-sans text-[12px] text-center" style={{ color: '#4186FF' }}>{t.successSub}</p>
                 <button
                   onClick={() => { setIntlDone(false); setIntlSelectedHanboks([]); setIntlForm({ name: '', phone: '', email: '', booking_date: '' }) }}
                   className="mt-2 font-sans text-[12px] underline"
-                  style={{ color: '#9C8572' }}
+                  style={{ color: '#4186FF' }}
                 >
                   {t.newBooking}
                 </button>
@@ -502,8 +506,8 @@ function InfoTab({ catalog }) {
                     onChange={(e) => setIntlForm((p) => ({ ...p, phone: e.target.value }))} />
                   <div>
                     <div className="flex items-baseline justify-between mb-1.5">
-                      <p className="font-sans text-[10px] font-bold uppercase tracking-wide" style={{ color: '#B8A898' }}>{t.dateLabel}</p>
-                      <p className="font-sans text-[10px]" style={{ color: '#C8B49A' }}>{t.dateHint}</p>
+                      <p className="font-sans text-[10px] font-bold uppercase tracking-wide" style={{ color: '#93B5FF' }}>{t.dateLabel}</p>
+                      <p className="font-sans text-[10px]" style={{ color: '#93B5FF' }}>{t.dateHint}</p>
                     </div>
                     <input type="date" className="input-field text-[13px]" value={intlForm.booking_date}
                       onChange={(e) => setIntlForm((p) => ({ ...p, booking_date: e.target.value }))} />
@@ -531,17 +535,17 @@ function InfoTab({ catalog }) {
           {bookingDone ? (
             <motion.div key="booking-done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
               className="flex flex-col items-center py-8 gap-2">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center mb-1" style={{ background: '#EDE0CF' }}>
-                <Check size={22} style={{ color: '#3D2314' }} strokeWidth={2.5} />
+              <div className="w-12 h-12 rounded-full flex items-center justify-center mb-1" style={{ background: '#E0EEFF' }}>
+                <Check size={22} style={{ color: '#0022FE' }} strokeWidth={2.5} />
               </div>
-              <p className="font-sans font-bold text-[15px]" style={{ color: '#3D2314', letterSpacing: '-0.02em' }}>예약 신청 완료!</p>
-              <p className="font-sans text-[12px] text-center" style={{ color: '#9C8572' }}>
+              <p className="font-sans font-bold text-[15px]" style={{ color: '#0022FE', letterSpacing: '-0.02em' }}>예약 신청 완료!</p>
+              <p className="font-sans text-[12px] text-center" style={{ color: '#4186FF' }}>
                 {selectedHanboks.length > 1 ? `${selectedHanboks.length}개 한복 · ` : ''}빠른 시간 내에 연락드리겠습니다.
               </p>
               <button
                 onClick={() => { setBookingDone(false); setSelectedHanboks([]); setBookingForm({ name: '', phone: '', email: '', booking_date: '' }) }}
                 className="mt-2 font-sans text-[12px] underline"
-                style={{ color: '#9C8572' }}
+                style={{ color: '#4186FF' }}
               >
                 새 예약 신청
               </button>
@@ -571,7 +575,7 @@ function InfoTab({ catalog }) {
                   onChange={(e) => setBookingForm((p) => ({ ...p, email: e.target.value }))}
                 />
                 <div>
-                  <p className="font-sans text-[10px] font-bold uppercase tracking-wide mb-1.5" style={{ color: '#B8A898' }}>
+                  <p className="font-sans text-[10px] font-bold uppercase tracking-wide mb-1.5" style={{ color: '#93B5FF' }}>
                     예약 날짜 *
                   </p>
                   <input
@@ -608,7 +612,7 @@ function InfoTab({ catalog }) {
         </AnimatePresence>
       </div>
 
-      <p className="text-center font-sans text-[10px] pb-6" style={{ color: '#C8B49A' }}>
+      <p className="text-center font-sans text-[10px] pb-6" style={{ color: '#93B5FF' }}>
         © {new Date().getFullYear()} 장금이 한복. All rights reserved.
       </p>
     </div>
@@ -643,23 +647,23 @@ export default function App() {
   }, [])
 
   return (
-    <div className="flex flex-col" style={{ height: '100dvh', maxWidth: '480px', margin: '0 auto', background: '#F5EDE0' }}>
+    <div className="flex flex-col" style={{ height: '100dvh', maxWidth: '480px', margin: '0 auto', background: '#EEF3FF' }}>
 
       {/* 헤더 */}
-      <header className="flex-none flex items-center justify-between px-5 safe-top bg-white" style={{ height: '60px' }}>
+      <header className="flex-none flex items-center justify-between px-5 safe-top" style={{ height: '60px', background: '#FFFFFF' }}>
         <div className="flex flex-col gap-0.5">
-          <span className="font-serif font-bold" style={{ fontSize: '16px', color: '#3D2314', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+          <span className="font-serif font-bold" style={{ fontSize: '16px', color: '#0022FE', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
             장금이 한복
           </span>
-          <span className="font-sans" style={{ fontSize: '10px', color: '#9C8572', letterSpacing: '0.04em' }}>
+          <span className="font-sans" style={{ fontSize: '10px', color: '#4186FF', letterSpacing: '0.04em' }}>
             Janggeum Hanbok · Since 2012
           </span>
         </div>
         <div className="flex flex-col items-end gap-0.5">
-          <span className="font-serif font-bold" style={{ fontSize: '13px', color: '#3D2314', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+          <span className="font-serif font-bold" style={{ fontSize: '13px', color: '#0022FE', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
             수원 화성 행궁
           </span>
-          <span className="font-sans" style={{ fontSize: '10px', color: '#9C8572', letterSpacing: '0.04em' }}>
+          <span className="font-sans" style={{ fontSize: '10px', color: '#4186FF', letterSpacing: '0.04em' }}>
             Hwaseong Haenggung
           </span>
         </div>
@@ -668,7 +672,7 @@ export default function App() {
       <div className="flex-none" style={{ height: '3px', background: DANCHEONG_STRIPE }} />
 
       {/* 콘텐츠 */}
-      <main className="flex-1 overflow-hidden relative" style={{ background: '#F5EDE0' }}>
+      <main className="flex-1 overflow-hidden relative" style={{ background: '#EEF3FF' }}>
         <AnimatePresence mode="wait">
           <motion.div
             key={tab}
@@ -689,7 +693,7 @@ export default function App() {
       {/* 단청 탭바 구분선 */}
       <div className="flex-none" style={{ height: '3px', background: DANCHEONG_STRIPE }} />
       {/* 탭바 */}
-      <nav className="flex-none flex bg-white safe-bottom" style={{ height: '56px' }}>
+      <nav className="flex-none flex safe-bottom" style={{ height: '56px', background: '#FFFFFF' }}>
         {TABS.map(({ id, label, Icon }) => {
           const active = tab === id
           return (
@@ -702,11 +706,11 @@ export default function App() {
               <Icon
                 size={18}
                 strokeWidth={active ? 2.3 : 1.7}
-                style={{ color: active ? '#3D2314' : '#C8B49A' }}
+                style={{ color: active ? '#0022FE' : '#4186FF' }}
                 className="transition-colors duration-150"
               />
               <span className="font-sans text-[10px] transition-colors duration-150"
-                style={{ color: active ? '#3D2314' : '#C8B49A', fontWeight: active ? 700 : 400, letterSpacing: '-0.01em' }}>
+                style={{ color: active ? '#0022FE' : '#4186FF', fontWeight: active ? 700 : 400, letterSpacing: '-0.01em' }}>
                 {label}
               </span>
             </motion.button>

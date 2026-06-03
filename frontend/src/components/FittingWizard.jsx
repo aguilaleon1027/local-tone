@@ -20,23 +20,23 @@ function StepIndicator({ current, total = 3 }) {
               className="w-8 h-8 rounded-full flex items-center justify-center font-serif text-sm font-bold transition-all duration-300"
               style={
                 i < current
-                  ? { background: '#B8975A', color: '#FDFAF6', boxShadow: '0 2px 8px rgba(184,151,90,0.4)' }
+                  ? { background: '#015DFE', color: '#FFFFFF', boxShadow: '0 2px 8px rgba(1,93,254,0.3)' }
                   : i === current
-                  ? { background: '#FDFAF6', color: '#B8975A', border: '2px solid #B8975A' }
-                  : { background: '#F5EDE0', color: '#C8B49A', border: '1.5px solid #D4C4B0' }
+                  ? { background: '#FFFFFF', color: '#015DFE', border: '2px solid #015DFE' }
+                  : { background: '#BDD6FF', color: '#93B5FF', border: '1.5px solid #BDD6FF' }
               }
             >
               {i < current ? <Check size={14} strokeWidth={2.5} /> : i + 1}
             </div>
             <span
               className="font-sans text-[9px] whitespace-nowrap"
-              style={{ color: i === current ? '#B8975A' : i < current ? '#6B4C35' : '#C8B49A', fontWeight: i === current ? 700 : 400 }}
+              style={{ color: i === current ? '#015DFE' : i < current ? '#4186FF' : '#93B5FF', fontWeight: i === current ? 700 : 400 }}
             >{labels[i]}</span>
           </div>
           {i < total - 1 && (
             <div
               className="w-14 mx-1.5 mb-5 transition-all duration-500"
-              style={{ height: '1.5px', background: i < current ? '#B8975A' : '#D4C4B0' }}
+              style={{ height: '1.5px', background: i < current ? '#015DFE' : '#BDD6FF' }}
             />
           )}
         </div>
@@ -87,8 +87,8 @@ function Step1({ onNext }) {
         onDrop={handleDrop}
         className={`relative rounded-2xl border-2 border-dashed transition-all duration-300 overflow-hidden ${
           dragging  ? 'border-hwang bg-hwang/5 scale-[1.01]' :
-          preview   ? 'border-stone/20 cursor-default' :
-                      'border-stone/30 hover:border-hwang/50 hover:bg-hwang/3 cursor-pointer'
+          preview   ? 'border-stone/30 cursor-default' :
+                      'border-hwang/40 hover:border-hwang hover:bg-hwang/5 bg-bg cursor-pointer'
         }`}
         style={{ minHeight: '220px' }}
       >
@@ -117,15 +117,15 @@ function Step1({ onNext }) {
       </div>
 
       {/* 팁 카드 */}
-      <div className="p-4 rounded-xl" style={{ background: '#F5EDE0', border: '1px solid #D4C4B0' }}>
+      <div className="p-4 rounded-xl" style={{ background: '#EEF3FF', border: '1px solid #BDD6FF' }}>
         <div className="flex items-center gap-2 mb-2.5">
-          <div style={{ width: '3px', height: '14px', background: '#B8975A', borderRadius: '2px', flexShrink: 0 }} />
-          <p className="font-serif text-[11px] font-bold" style={{ color: '#3D2314' }}>좋은 결과를 위한 팁</p>
+          <div style={{ width: '3px', height: '14px', background: '#015DFE', borderRadius: '2px', flexShrink: 0 }} />
+          <p className="font-serif text-[11px] font-bold" style={{ color: '#0022FE' }}>좋은 결과를 위한 팁</p>
         </div>
         <ul className="space-y-1.5">
           {['정면을 바라보는 전신 사진', '밝고 깨끗한 배경', '몸 전체가 나오는 구도'].map((t) => (
-            <li key={t} className="flex items-center gap-2 font-sans text-[11px]" style={{ color: '#6B4C35' }}>
-              <span className="font-serif flex-shrink-0" style={{ color: '#B8975A', fontSize: '9px' }}>◈</span>
+            <li key={t} className="flex items-center gap-2 font-sans text-[11px]" style={{ color: '#4186FF' }}>
+              <span className="font-serif flex-shrink-0" style={{ color: '#015DFE', fontSize: '9px' }}>◈</span>
               {t}
             </li>
           ))}
@@ -325,9 +325,9 @@ function Step3({ photoId, hanbok, onRetry }) {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 220, damping: 16 }}
-            className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: '#F2F2F2' }}
+            className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: '#E0EEFF' }}
           >
-            <Check size={24} className="text-nok" strokeWidth={2.5} />
+            <Check size={24} strokeWidth={2.5} style={{ color: '#0022FE' }} />
           </motion.div>
 
           <motion.h3
@@ -384,7 +384,7 @@ function Step3({ photoId, hanbok, onRetry }) {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35 }}
-              className="w-full p-4 text-left" style={{ background: '#F8F8F8', border: '1px solid #E8E8E8', borderLeft: '3px solid #111111', borderRadius: '12px' }}
+              className="w-full p-4 text-left" style={{ background: '#EEF3FF', border: '1px solid #BDD6FF', borderLeft: '3px solid #0022FE', borderRadius: '12px' }}
             >
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles size={13} className="text-hwang" />
@@ -439,7 +439,7 @@ export default function FittingWizard({ catalog = [] }) {
   const reset = () => { setStep(0); setPhotoId(null); setHanbok(null); setPrefillId(null) }
 
   return (
-    <div className="p-5 rounded-2xl" style={{ background: '#FDFAF6', border: '1px solid #D4C4B0' }}>
+    <div className="p-5 rounded-2xl" style={{ background: '#FFFFFF', border: '1px solid #BDD6FF' }}>
       <StepIndicator current={step} />
       <AnimatePresence mode="wait" custom={dir}>
         <motion.div key={step} custom={dir} variants={slide} initial="enter" animate="center" exit="exit">

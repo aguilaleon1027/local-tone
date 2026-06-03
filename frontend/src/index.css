@@ -4,15 +4,10 @@
 
 @layer base {
   * { box-sizing: border-box; }
-
-  html {
-    scroll-behavior: smooth;
-    -webkit-tap-highlight-color: transparent;
-  }
-
+  html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
   body {
-    background-color: #F5EDE0;
-    color: #3D2314;
+    background-color: #EEF3FF;
+    color: #1A1A3E;
     font-family: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
@@ -20,105 +15,66 @@
     word-break: keep-all;
     letter-spacing: -0.01em;
   }
-
   ::-webkit-scrollbar { width: 0; }
 }
 
 @layer components {
-  /* ── 카드 ── */
   .card {
-    background: #FDFAF6;
+    background: #FFFFFF;
     border-radius: 12px;
-    border: 1px solid #D4C4B0;
+    border: 1px solid #BDD6FF;
   }
-
-  /* ── 유리막 ── */
   .glass {
-    background: rgba(253, 250, 246, 0.92);
+    background: rgba(255,255,255,0.92);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid #D4C4B0;
+    border: 1px solid #BDD6FF;
   }
-
-  /* ── 메인 버튼 (우드 브라운) ── */
   .btn-gold {
     @apply relative inline-flex items-center gap-2 px-6 py-3 font-sans font-bold text-sm rounded-xl overflow-hidden transition-all duration-200;
-    color: #FDFAF6;
-    background: #5C3D22;
+    color: #FFFFFF;
+    background: #0022FE;
     letter-spacing: -0.01em;
   }
-  .btn-gold:hover  { background: #7A5035; }
-  .btn-gold:active { background: #3D2314; transform: scale(0.99); }
+  .btn-gold:hover  { background: #015DFE; }
+  .btn-gold:active { background: #001ACC; transform: scale(0.99); }
 
-  /* ── 아웃라인 버튼 ── */
   .btn-outline {
     @apply inline-flex items-center gap-2 px-6 py-3 font-sans font-bold text-sm rounded-xl transition-all duration-200;
-    color: #5C3D22;
-    border: 1.5px solid #5C3D22;
+    color: #0022FE;
+    border: 1.5px solid #0022FE;
     background: transparent;
     letter-spacing: -0.01em;
   }
-  .btn-outline:hover { background: #EDE0CF; }
+  .btn-outline:hover { background: #E0EEFF; }
 
-  /* ── 섹션 태그 ── */
   .section-tag {
     @apply text-xs font-sans font-bold tracking-[0.2em] uppercase;
-    color: #8B6344;
+    color: #015DFE;
   }
+  .gradient-text { color: #0022FE; }
 
-  /* ── 그라데이션 텍스트 ── */
-  .gradient-text {
-    color: #3D2314;
-  }
-
-  /* ── 입력 필드 ── */
   .input-field {
     @apply w-full border rounded-xl px-4 py-3 text-sm font-sans outline-none transition-all duration-200;
-    background: #FDFAF6;
-    border-color: #DCCCB8;
-    color: #3D2314;
+    background: #FFFFFF;
+    border-color: #BDD6FF;
+    color: #1A1A3E;
     letter-spacing: -0.01em;
   }
-  .input-field::placeholder { color: #B8A898; }
+  .input-field::placeholder { color: #93B5FF; }
   .input-field:focus {
-    border-color: #8B6344;
-    box-shadow: 0 0 0 3px rgba(139, 99, 68, 0.10);
+    border-color: #0022FE;
+    box-shadow: 0 0 0 3px rgba(0,34,254,0.10);
   }
 
-  /* ── 안전 영역 (iOS 노치) ── */
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
   .safe-top    { padding-top:    env(safe-area-inset-top,    0px); }
-
-  /* ── 스크롤바 숨김 ── */
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-  /* ── 텍스트 줄임 ── */
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .line-clamp-3 {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
+  .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 }
 
-@keyframes shimmer {
-  0%   { background-position: 0% center; }
-  100% { background-position: 200% center; }
-}
-
-@keyframes marquee {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-8px); }
-}
+@keyframes shimmer { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
+@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+@keyframes float   { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }

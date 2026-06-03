@@ -14,14 +14,23 @@ const CLICK_CATS = ['FD6', 'CE7', 'AT4', 'SW8', 'CT1', 'CS2', 'MT1', 'HP8']
 
 /* ─── 핀 모양 SVG 마커 이미지 URL ─── */
 function pinSVG(n, active = false) {
-  const bg   = active ? '#B8975A' : '#3D2314'
-  const size = active ? 11 : 10
+  if (active) {
+    // 선택됨: 메인 색상 유지, 큰 사이즈로 구분
+    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="46" viewBox="0 0 36 46">
+        <path d="M18 0C8.06 0 0 8.06 0 18c0 12 18 28 18 28s18-16 18-28C36 8.06 27.94 0 18 0z" fill="#0022FE"/>
+        <circle cx="18" cy="17" r="9" fill="rgba(255,255,255,0.2)"/>
+        <text x="18" y="21" font-family="sans-serif" font-size="12" font-weight="bold"
+              text-anchor="middle" dominant-baseline="middle" fill="#FFFFFF">${n}</text>
+      </svg>`
+    )}`
+  }
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">
-      <path d="M14 0C6.27 0 0 6.27 0 14c0 9.33 14 22 14 22s14-12.67 14-22C28 6.27 21.73 0 14 0z" fill="${bg}"/>
+      <path d="M14 0C6.27 0 0 6.27 0 14c0 9.33 14 22 14 22s14-12.67 14-22C28 6.27 21.73 0 14 0z" fill="#0022FE"/>
       <circle cx="14" cy="13" r="7" fill="rgba(255,255,255,0.2)"/>
-      <text x="14" y="17" font-family="sans-serif" font-size="${size}" font-weight="bold"
-            text-anchor="middle" dominant-baseline="middle" fill="#FDFAF6">${n}</text>
+      <text x="14" y="17" font-family="sans-serif" font-size="10" font-weight="bold"
+            text-anchor="middle" dominant-baseline="middle" fill="#FFFFFF">${n}</text>
     </svg>`
   )}`
 }
@@ -124,9 +133,9 @@ export default function NearbyMap({ appKey }) {
         /* 장금이 한복 핀 */
         const shopEl = document.createElement('div')
         shopEl.style.cssText = [
-          'background:#B8975A', 'color:#FDFAF6', 'font-size:10px', 'font-weight:700',
+          'background:#015DFE', 'color:#FFFFFF', 'font-size:10px', 'font-weight:700',
           'padding:5px 10px', 'border-radius:20px', 'white-space:nowrap',
-          'box-shadow:0 2px 10px rgba(0,0,0,0.3)', 'border:1.5px solid #FDFAF6',
+          'box-shadow:0 2px 10px rgba(0,0,0,0.3)', 'border:1.5px solid #FFFFFF',
         ].join(';')
         shopEl.textContent = '장금이 한복'
         new kakao.maps.CustomOverlay({ position: center, content: shopEl, map, yAnchor: 1 })
@@ -139,7 +148,7 @@ export default function NearbyMap({ appKey }) {
           disableClickZoom: false,
           styles: [{
             width: '36px', height: '36px', borderRadius: '18px',
-            background: '#3D2314', color: '#FDFAF6',
+            background: '#0022FE', color: '#FFFFFF',
             textAlign: 'center', lineHeight: '36px',
             fontWeight: '700', fontSize: '13px',
             boxShadow: '0 2px 8px rgba(61,35,20,0.4)',
@@ -188,9 +197,10 @@ export default function NearbyMap({ appKey }) {
     markerRefs.current = []
 
     const markers = places.map((place, idx) => {
-      const imgUrl  = pinSVG(idx + 1, idx === selected)
-      const imgSize = new kakao.maps.Size(28, 36)
-      const imgOpt  = { offset: new kakao.maps.Point(14, 36) }
+      const isActive = idx === selected
+      const imgUrl  = pinSVG(idx + 1, isActive)
+      const imgSize = isActive ? new kakao.maps.Size(36, 46) : new kakao.maps.Size(28, 36)
+      const imgOpt  = isActive ? { offset: new kakao.maps.Point(18, 46) } : { offset: new kakao.maps.Point(14, 36) }
       const marker  = new kakao.maps.Marker({
         position: new kakao.maps.LatLng(place.lat, place.lng),
         image:    new kakao.maps.MarkerImage(imgUrl, imgSize, imgOpt),
@@ -214,9 +224,10 @@ export default function NearbyMap({ appKey }) {
   /* 선택 마커 이미지 교체 */
   useEffect(() => {
     markerRefs.current.forEach((marker, idx) => {
-      const imgUrl  = pinSVG(idx + 1, idx === selected)
-      const imgSize = new kakao.maps.Size(28, 36)
-      const imgOpt  = { offset: new kakao.maps.Point(14, 36) }
+      const isActive = idx === selected
+      const imgUrl  = pinSVG(idx + 1, isActive)
+      const imgSize = isActive ? new kakao.maps.Size(36, 46) : new kakao.maps.Size(28, 36)
+      const imgOpt  = isActive ? { offset: new kakao.maps.Point(18, 46) } : { offset: new kakao.maps.Point(14, 36) }
       marker.setImage(new kakao.maps.MarkerImage(imgUrl, imgSize, imgOpt))
     })
   }, [selected])
@@ -241,7 +252,7 @@ export default function NearbyMap({ appKey }) {
     <div className="h-full flex flex-col overflow-hidden">
 
       {/* 카테고리 필터 */}
-      <div className="flex-none px-4 py-2.5 bg-white" style={{ borderBottom: '1px solid #D4C4B0' }}>
+      <div className="flex-none px-4 py-2.5" style={{ background: '#FFFFFF', borderBottom: '1px solid #BDD6FF' }}>
         <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
           {CATEGORIES.map(c => (
             <motion.button
@@ -250,8 +261,8 @@ export default function NearbyMap({ appKey }) {
               onClick={() => { setCategory(c.id); setMoved(false) }}
               className="flex-none flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] whitespace-nowrap transition-all duration-150"
               style={category === c.id
-                ? { background: '#3D2314', color: '#FDFAF6', fontWeight: 700 }
-                : { background: '#EDE0CF', color: '#6B4C35', fontWeight: 500 }}
+                ? { background: '#0022FE', color: '#FFFFFF', fontWeight: 700 }
+                : { background: '#FFFFFF', color: '#4186FF', fontWeight: 500, border: '1px solid #BDD6FF' }}
             >
               <span>{c.id}</span>
             </motion.button>
@@ -265,9 +276,9 @@ export default function NearbyMap({ appKey }) {
           <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-2"
-            style={{ background: '#EDE0CF' }}>
-            <MapPin size={24} style={{ color: '#9C8572' }} />
-            <p className="text-[12px] font-medium" style={{ color: '#9C8572' }}>VITE_KAKAO_MAP_KEY 설정 필요</p>
+            style={{ background: '#E0EEFF' }}>
+            <MapPin size={24} style={{ color: '#4186FF' }} />
+            <p className="text-[12px] font-medium" style={{ color: '#4186FF' }}>VITE_KAKAO_MAP_KEY 설정 필요</p>
           </div>
         )}
 
@@ -278,7 +289,7 @@ export default function NearbyMap({ appKey }) {
               className="absolute inset-0 flex items-center justify-center"
               style={{ background: 'rgba(245,237,224,0.6)' }}>
               <div className="w-6 h-6 border-2 rounded-full animate-spin"
-                style={{ borderColor: '#D4C4B0', borderTopColor: '#3D2314' }} />
+                style={{ borderColor: '#BDD6FF', borderTopColor: '#0022FE' }} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -294,9 +305,9 @@ export default function NearbyMap({ appKey }) {
               onClick={searchHere}
               className="absolute top-2.5 left-1/2 flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[12px] font-bold"
               style={{
-                background:  '#FDFAF6',
-                color:       '#3D2314',
-                border:      '1px solid #D4C4B0',
+                background:  '#FFFFFF',
+                color:       '#0022FE',
+                border:      '1px solid #BDD6FF',
                 boxShadow:   '0 2px 12px rgba(61,35,20,0.2)',
                 transform:   'translateX(-50%)',   // framer-motion x override용
               }}
@@ -317,78 +328,78 @@ export default function NearbyMap({ appKey }) {
             exit={{    opacity: 0, y: -8 }}
             transition={{ duration: 0.16 }}
             className="flex-none mx-3 mt-2.5 rounded-2xl overflow-hidden"
-            style={{ background: '#FDFAF6', border: '1px solid #D4C4B0', boxShadow: '0 4px 20px rgba(61,35,20,0.14)' }}
+            style={{ background: '#FFFFFF', border: '1px solid #BDD6FF', boxShadow: '0 4px 20px rgba(61,35,20,0.14)' }}
           >
             <div className="px-4 pt-3.5 pb-2 flex items-start gap-2">
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-[14px] leading-snug" style={{ color: '#3D2314' }}>
+                <p className="font-bold text-[14px] leading-snug" style={{ color: '#0022FE' }}>
                   {infoPlace.title}
                 </p>
                 <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                   {infoPlace.category && (
                     <span className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-                      style={{ background: '#EDE0CF', color: '#6B4C35' }}>
+                      style={{ background: '#E0EEFF', color: '#4186FF' }}>
                       {infoPlace.category}
                     </span>
                   )}
                   {infoPlace.distance && (
-                    <span className="text-[10px]" style={{ color: '#9C8572' }}>
+                    <span className="text-[10px]" style={{ color: '#4186FF' }}>
                       · {distLabel(infoPlace.distance)}
                     </span>
                   )}
                   {isMapSource && (
                     <span className="text-[10px] px-2 py-0.5 rounded-full"
-                      style={{ background: '#F5EDE0', color: '#B8975A', border: '1px solid #D4C4B0' }}>
+                      style={{ background: '#E0EEFF', color: '#0022FE', border: '1px solid #BDD6FF' }}>
                       지도 검색
                     </span>
                   )}
                 </div>
               </div>
               <button onClick={closeCard} className="p-1.5 rounded-full flex-shrink-0"
-                style={{ background: '#EDE0CF' }}>
-                <X size={12} style={{ color: '#6B4C35' }} />
+                style={{ background: '#E0EEFF' }}>
+                <X size={12} style={{ color: '#4186FF' }} />
               </button>
             </div>
 
             <div className="px-4 pb-3 space-y-1.5">
               {(infoPlace.roadAddress || infoPlace.address) && (
                 <div className="flex items-start gap-2">
-                  <MapPin size={11} className="flex-shrink-0 mt-0.5" style={{ color: '#B8975A' }} />
+                  <MapPin size={11} className="flex-shrink-0 mt-0.5" style={{ color: '#015DFE' }} />
                   <div>
                     {infoPlace.roadAddress && (
-                      <p className="text-[11px] font-medium" style={{ color: '#3D2314' }}>
+                      <p className="text-[11px] font-medium" style={{ color: '#0022FE' }}>
                         {infoPlace.roadAddress}
                       </p>
                     )}
                     {infoPlace.address && infoPlace.address !== infoPlace.roadAddress && (
-                      <p className="text-[10px]" style={{ color: '#9C8572' }}>지번 {infoPlace.address}</p>
+                      <p className="text-[10px]" style={{ color: '#4186FF' }}>지번 {infoPlace.address}</p>
                     )}
                   </div>
                 </div>
               )}
               {infoPlace.telephone && (
                 <div className="flex items-center gap-2">
-                  <Phone size={11} style={{ color: '#B8975A', flexShrink: 0 }} />
+                  <Phone size={11} style={{ color: '#015DFE', flexShrink: 0 }} />
                   <a href={`tel:${infoPlace.telephone}`}
-                    className="text-[11px] font-medium" style={{ color: '#3D2314' }}>
+                    className="text-[11px] font-medium" style={{ color: '#0022FE' }}>
                     {infoPlace.telephone}
                   </a>
                 </div>
               )}
             </div>
 
-            <div className="flex" style={{ borderTop: '1px solid #EDE0CF' }}>
+            <div className="flex" style={{ borderTop: '1px solid #E0EEFF' }}>
               {infoPlace.telephone && (
                 <a href={`tel:${infoPlace.telephone}`}
                   className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-medium"
-                  style={{ color: '#6B4C35', borderRight: '1px solid #EDE0CF' }}>
+                  style={{ color: '#4186FF', borderRight: '1px solid #E0EEFF' }}>
                   <Phone size={11} /> 전화
                 </a>
               )}
               {infoPlace.link && (
                 <a href={infoPlace.link} target="_blank" rel="noopener noreferrer"
                   className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-bold"
-                  style={{ color: '#B8975A' }}>
+                  style={{ color: '#015DFE' }}>
                   <ExternalLink size={11} /> 카카오맵에서 자세히 보기
                 </a>
               )}
@@ -398,10 +409,10 @@ export default function NearbyMap({ appKey }) {
       </AnimatePresence>
 
       {/* 장소 리스트 */}
-      <div className="flex-1 overflow-y-auto no-scrollbar mt-1" style={{ background: '#F5EDE0' }}>
+      <div className="flex-1 overflow-y-auto no-scrollbar mt-1" style={{ background: '#EEF3FF' }}>
         {!loading && places.length === 0 ? (
           <div className="flex items-center justify-center py-10">
-            <p className="text-[12px]" style={{ color: '#9C8572' }}>
+            <p className="text-[12px]" style={{ color: '#4186FF' }}>
               {appKey ? '검색 결과가 없습니다' : 'API 키를 설정해주세요'}
             </p>
           </div>
@@ -411,30 +422,33 @@ export default function NearbyMap({ appKey }) {
               key={idx}
               whileTap={{ scale: 0.99 }}
               onClick={() => { setMapPlace(null); setSelected(prev => prev === idx ? null : idx) }}
-              className="w-full text-left px-4 py-3 flex items-start gap-3"
+              className="w-full text-left py-3 flex items-start gap-3"
               style={{
-                background:   selected === idx ? '#EDE0CF' : 'transparent',
-                borderBottom: idx < places.length - 1 ? '1px solid #D4C4B0' : 'none',
+                background:   selected === idx ? '#E8F0FF' : 'transparent',
+                borderBottom: idx < places.length - 1 ? '1px solid #BDD6FF' : 'none',
+                borderLeft:   selected === idx ? '3px solid #0022FE' : '3px solid transparent',
+                paddingLeft:  '13px',
+                paddingRight: '16px',
               }}
             >
               <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                style={{ background: selected === idx ? '#B8975A' : '#D4C4B0' }}>
+                style={{ background: selected === idx ? '#0022FE' : '#BDD6FF' }}>
                 <span className="text-[10px] font-bold"
-                  style={{ color: selected === idx ? '#FDFAF6' : '#6B4C35' }}>
+                  style={{ color: selected === idx ? '#FFFFFF' : '#4186FF' }}>
                   {idx + 1}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-[13px] truncate"
-                  style={{ color: '#3D2314', letterSpacing: '-0.02em' }}>{p.title}</p>
-                <p className="text-[11px] mt-0.5" style={{ color: '#9C8572' }}>
+                  style={{ color: '#0022FE', letterSpacing: '-0.02em' }}>{p.title}</p>
+                <p className="text-[11px] mt-0.5" style={{ color: '#4186FF' }}>
                   {p.category}{p.distance ? ` · ${distLabel(p.distance)}` : ''}
                 </p>
-                <p className="text-[11px] truncate" style={{ color: '#B8A898' }}>
+                <p className="text-[11px] truncate" style={{ color: '#4186FF' }}>
                   {p.roadAddress || p.address}
                 </p>
               </div>
-              <MapPin size={13} className="flex-shrink-0 mt-1" style={{ color: '#B8975A' }} />
+              <MapPin size={13} className="flex-shrink-0 mt-1" style={{ color: '#015DFE' }} />
             </motion.button>
           ))
         )}
