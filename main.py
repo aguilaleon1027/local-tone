@@ -80,4 +80,9 @@ async def root():
 
 @app.get("/{full_path:path}", include_in_schema=False)
 async def spa_fallback(full_path: str):
+    # dist 루트에 실제 파일이 있으면 (logo.jpg, favicon.ico 등) 그 파일 반환
+    file_path = DIST_DIR / full_path
+    if file_path.exists() and file_path.is_file():
+        return FileResponse(file_path)
+    # 없으면 SPA index.html 반환
     return FileResponse(_index())
