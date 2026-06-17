@@ -10,6 +10,61 @@ const CATEGORIES = [
   { id: '관광지' },
 ]
 
+const NEARBY_I18N = {
+  ko: {
+    cats:        { '맛집': '맛집', '카페': '카페', '관광지': '관광지' },
+    searchHere:  '이 지역에서 검색',
+    call:        '전화',
+    kakaoMap:    '카카오맵에서 자세히 보기',
+    jibun:       '지번',
+    mapSearch:   '지도 검색',
+    noResult:    '검색 결과가 없습니다',
+    noKey:       'API 키를 설정해주세요',
+    mapFail:     '지도를 불러올 수 없습니다',
+    mapFailSub:  '카카오 개발자 콘솔에서 현재 도메인을 등록해주세요',
+    retry:       '다시 시도',
+  },
+  en: {
+    cats:        { '맛집': 'Restaurant', '카페': 'Café', '관광지': 'Sightseeing' },
+    searchHere:  'Search this area',
+    call:        'Call',
+    kakaoMap:    'View on KakaoMap',
+    jibun:       'Lot No.',
+    mapSearch:   'Map Result',
+    noResult:    'No results found',
+    noKey:       'Please set API key',
+    mapFail:     'Map could not be loaded',
+    mapFailSub:  'Please register this domain in Kakao Developer Console',
+    retry:       'Retry',
+  },
+  zh: {
+    cats:        { '맛집': '餐厅', '카페': '咖啡厅', '관광지': '景点' },
+    searchHere:  '搜索此区域',
+    call:        '电话',
+    kakaoMap:    '在KakaoMap查看',
+    jibun:       '地番',
+    mapSearch:   '地图结果',
+    noResult:    '未找到结果',
+    noKey:       '请设置API密钥',
+    mapFail:     '地图加载失败',
+    mapFailSub:  '请在Kakao开发者控制台注册当前域名',
+    retry:       '重试',
+  },
+  ja: {
+    cats:        { '맛집': 'グルメ', '카페': 'カフェ', '관광지': '観光地' },
+    searchHere:  'このエリアを検索',
+    call:        '電話',
+    kakaoMap:    'KakaoMapで詳しく見る',
+    jibun:       '地番',
+    mapSearch:   '地図検索',
+    noResult:    '検索結果がありません',
+    noKey:       'APIキーを設定してください',
+    mapFail:     '地図を読み込めません',
+    mapFailSub:  'Kakao開発者コンソールでドメインを登録してください',
+    retry:       '再試行',
+  },
+}
+
 const CLICK_CATS = ['FD6', 'CE7', 'AT4', 'SW8', 'CT1', 'CS2', 'MT1', 'HP8']
 
 /* ─── 핀 모양 SVG 마커 이미지 URL ─── */
@@ -108,7 +163,8 @@ function distLabel(d) {
 }
 
 /* ─── 메인 컴포넌트 ─── */
-export default function NearbyMap({ appKey }) {
+export default function NearbyMap({ appKey, lang = 'ko' }) {
+  const t = NEARBY_I18N[lang] ?? NEARBY_I18N.ko
   const containerRef  = useRef(null)
   const mapRef        = useRef(null)
   const clustererRef  = useRef(null)
@@ -274,7 +330,7 @@ export default function NearbyMap({ appKey }) {
               className="relative flex-none px-5 py-3.5 text-[13px] whitespace-nowrap font-sans transition-colors duration-150"
               style={{ color: category === c.id ? '#1A1A3E' : '#ABABAB', fontWeight: category === c.id ? 700 : 400 }}
             >
-              {c.id}
+              {t.cats[c.id]}
               {category === c.id && (
                 <motion.div
                   layoutId="nearby-underline"
@@ -300,7 +356,7 @@ export default function NearbyMap({ appKey }) {
         {!appKey && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2" style={{ background: '#E0EEFF' }}>
             <MapPin size={24} style={{ color: '#4186FF' }} />
-            <p className="text-[12px] font-medium" style={{ color: '#4186FF' }}>VITE_KAKAO_MAP_KEY 설정 필요</p>
+            <p className="text-[12px] font-medium" style={{ color: '#4186FF' }}>{t.noKey}</p>
           </div>
         )}
 
@@ -309,16 +365,16 @@ export default function NearbyMap({ appKey }) {
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3" style={{ background: '#EEF3FF' }}>
             <MapPin size={28} style={{ color: '#4186FF' }} />
             <div className="text-center px-4">
-              <p className="text-[13px] font-bold" style={{ color: '#0022FE' }}>지도를 불러올 수 없습니다</p>
-              <p className="text-[11px] mt-1" style={{ color: '#4186FF' }}>카카오 개발자 콘솔에서 현재 도메인</p>
-              <p className="text-[11px]" style={{ color: '#4186FF' }}>({window.location.origin})을 등록해주세요</p>
+              <p className="text-[13px] font-bold" style={{ color: '#0022FE' }}>{t.mapFail}</p>
+              <p className="text-[11px] mt-1" style={{ color: '#4186FF' }}>{t.mapFailSub}</p>
+              <p className="text-[11px]" style={{ color: '#4186FF' }}>({window.location.origin})</p>
             </div>
             <button
               onClick={() => { setMapError(null); mapRef.current = null; }}
               className="px-4 py-1.5 rounded-full text-[11px] font-bold"
               style={{ background: '#0022FE', color: '#FFF' }}
             >
-              다시 시도
+              {t.retry}
             </button>
           </div>
         )}
@@ -354,7 +410,7 @@ export default function NearbyMap({ appKey }) {
               }}
             >
               <Search size={12} />
-              이 지역에서 검색
+              {t.searchHere}
             </motion.button>
           )}
         </AnimatePresence>
@@ -391,7 +447,7 @@ export default function NearbyMap({ appKey }) {
                   {isMapSource && (
                     <span className="text-[10px] px-2 py-0.5 rounded-full"
                       style={{ background: '#E0EEFF', color: '#0022FE', border: '1px solid #BDD6FF' }}>
-                      지도 검색
+                      {t.mapSearch}
                     </span>
                   )}
                 </div>
@@ -413,7 +469,7 @@ export default function NearbyMap({ appKey }) {
                       </p>
                     )}
                     {infoPlace.address && infoPlace.address !== infoPlace.roadAddress && (
-                      <p className="text-[10px]" style={{ color: '#4186FF' }}>지번 {infoPlace.address}</p>
+                      <p className="text-[10px]" style={{ color: '#4186FF' }}>{t.jibun} {infoPlace.address}</p>
                     )}
                   </div>
                 </div>
@@ -434,14 +490,14 @@ export default function NearbyMap({ appKey }) {
                 <a href={`tel:${infoPlace.telephone}`}
                   className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-medium"
                   style={{ color: '#4186FF', borderRight: '1px solid #E0EEFF' }}>
-                  <Phone size={11} /> 전화
+                  <Phone size={11} /> {t.call}
                 </a>
               )}
               {infoPlace.link && (
                 <a href={infoPlace.link} target="_blank" rel="noopener noreferrer"
                   className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-bold"
                   style={{ color: '#015DFE' }}>
-                  <ExternalLink size={11} /> 카카오맵에서 자세히 보기
+                  <ExternalLink size={11} /> {t.kakaoMap}
                 </a>
               )}
             </div>
@@ -450,11 +506,11 @@ export default function NearbyMap({ appKey }) {
       </AnimatePresence>
 
       {/* 장소 리스트 */}
-      <div className="flex-1 overflow-y-auto no-scrollbar mt-1" style={{ background: '#EEF3FF' }}>
+      <div className="flex-1 overflow-y-auto no-scrollbar mt-1" style={{ background: '#FFFFFF' }}>
         {!loading && places.length === 0 ? (
           <div className="flex items-center justify-center py-10">
-            <p className="text-[12px]" style={{ color: '#4186FF' }}>
-              {appKey ? '검색 결과가 없습니다' : 'API 키를 설정해주세요'}
+            <p className="text-[12px]" style={{ color: '#ABABAB' }}>
+              {appKey ? t.noResult : t.noKey}
             </p>
           </div>
         ) : (
@@ -465,31 +521,34 @@ export default function NearbyMap({ appKey }) {
               onClick={() => { setMapPlace(null); setSelected(prev => prev === idx ? null : idx) }}
               className="w-full text-left py-3 flex items-start gap-3"
               style={{
-                background:   selected === idx ? '#E8F0FF' : 'transparent',
-                borderBottom: idx < places.length - 1 ? '1px solid #BDD6FF' : 'none',
+                background:   selected === idx ? '#F5F7FF' : '#FFFFFF',
+                borderBottom: idx < places.length - 1 ? '1px solid #F0F0F5' : 'none',
                 borderLeft:   selected === idx ? '3px solid #0022FE' : '3px solid transparent',
                 paddingLeft:  '13px',
                 paddingRight: '16px',
               }}
             >
               <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                style={{ background: selected === idx ? '#0022FE' : '#BDD6FF' }}>
+                style={{ background: selected === idx ? '#0022FE' : '#EEEEEE' }}>
                 <span className="text-[10px] font-bold"
-                  style={{ color: selected === idx ? '#FFFFFF' : '#4186FF' }}>
+                  style={{ color: selected === idx ? '#FFFFFF' : '#888888' }}>
                   {idx + 1}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-[13px] truncate"
-                  style={{ color: '#0022FE', letterSpacing: '-0.02em' }}>{p.title}</p>
-                <p className="text-[11px] mt-0.5" style={{ color: '#4186FF' }}>
+                  style={{ color: selected === idx ? '#0022FE' : '#1A1A3E', letterSpacing: '-0.02em' }}>{p.title}</p>
+                <p className="text-[11px] mt-0.5"
+                  style={{ color: selected === idx ? '#4186FF' : '#888888' }}>
                   {p.category}{p.distance ? ` · ${distLabel(p.distance)}` : ''}
                 </p>
-                <p className="text-[11px] truncate" style={{ color: '#4186FF' }}>
+                <p className="text-[11px] truncate"
+                  style={{ color: selected === idx ? '#4186FF' : '#ABABAB' }}>
                   {p.roadAddress || p.address}
                 </p>
               </div>
-              <MapPin size={13} className="flex-shrink-0 mt-1" style={{ color: '#015DFE' }} />
+              <MapPin size={13} className="flex-shrink-0 mt-1"
+                style={{ color: selected === idx ? '#015DFE' : '#ABABAB' }} />
             </motion.button>
           ))
         )}

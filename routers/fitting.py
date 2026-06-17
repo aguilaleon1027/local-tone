@@ -81,22 +81,188 @@ async def _fetch_url_bytes(url: str) -> tuple[bytes, str]:
         return resp.content, mime
 
 
+def _create_fullbody_mask(person_path: Path) -> Path:
+    """
+    전신 한복 피팅용 수동 마스크 생성.
+
+    IDM-VTON의 is_checked=False 모드에서 사용.
+    - 흰색 불투명(RGBA 255,255,255,255) = 한복으로 교체할 영역 (목 아래 전신)
+    - 투명(alpha=0)                    = 보존 영역 (얼굴·머리)
+
+    얼굴/머리가 차지하는 비율을 22%로 가정.
+    (인물 전신 사진 기준. 반신 사진은 neck_ratio를 높여야 함)
+    """
+    from PIL import Image, ImageDraw
+
+    img = Image.open(person_path)
+    w, h = img.size
+
+    # RGBA 마스크: 기본은 투명 (=보존)
+    mask = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(mask)
+
+    # 목 아래 전신 → 흰색 불투명 (한복 교체 영역)
+    neck_y = int(h * 0.22)
+    draw.rectangle([(0, neck_y), (w, h)], fill=(255, 255, 255, 255))
+
+    mask_path = person_path.parent / f"_mask_{person_path.stem}.png"
+    mask.save(mask_path, "PNG")
+    print(f"[fitting] 전신 마스크 생성: {w}×{h}px, 목 경계선 Y={neck_y}px")
+    return mask_path
+
+
+def _postprocess_result(img_path: Path) -> Path:
+    """
+    IDM-VTON 결과 이미지 후처리 파이프라인.
+
+    적용 순서:
+      1. 신발 영역 처리 — 하단 12% 그라디언트 페이드
+         (현대 신발이 한복과 어색하게 대비되는 것을 자연스럽게 처리)
+      2. 2× 업스케일 — Pillow LANCZOS + UnsharpMask 샤프닝
+         (AI 생성 특유의 약간 뭉개진 질감을 선명하게 개선)
+    """
+    from PIL import Image, ImageFilter, ImageEnhance
+    import numpy as np
+
+    img = Image.open(img_path).convert("RGB")
+    w, h = img.size
+
+    # ── STEP 1: 신발 영역 그라디언트 페이드 ──────────────────────
+    # 하단 12% 영역을 흰색으로 서서히 페이드 → 현대 신발을 자연스럽게 가림
+    # 85% 지점부터 점점 흰색으로 전환 (너무 갑작스럽지 않게 20% 구간에 걸쳐)
+    img_rgba  = img.convert("RGBA")
+    pixels    = img_rgba.load()
+    fade_start = int(h * 0.84)   # 84% 높이부터 페이드 시작
+    fade_end   = int(h * 1.0)    # 이미지 하단 끝
+
+    for y in range(fade_start, fade_end):
+        # 0.0(페이드 없음) → 1.0(완전 흰색)으로 선형 변화
+        t = (y - fade_start) / (fade_end - fade_start)
+        # ease-out 곡선으로 자연스럽게
+        t = t * t * (3 - 2 * t)   # smoothstep
+        for x in range(w):
+            r, g, b, a = pixels[x, y]
+            r = int(r + (255 - r) * t)
+            g = int(g + (255 - g) * t)
+            b = int(b + (255 - b) * t)
+            pixels[x, y] = (r, g, b, a)
+
+    img = img_rgba.convert("RGB")
+    print(f"[fitting] 신발 영역 페이드 처리 완료 (Y={fade_start}~{h}px)")
+
+    # ── STEP 2: 2× 업스케일 + 샤프닝 ────────────────────────────
+    new_w, new_h = w * 2, h * 2
+    img = img.resize((new_w, new_h), Image.LANCZOS)
+
+    # UnsharpMask: AI 생성 이미지의 약간 흐릿한 질감 보완
+    img = img.filter(ImageFilter.UnsharpMask(radius=1.2, percent=130, threshold=3))
+
+    # 선명도 미세 향상
+    img = ImageEnhance.Sharpness(img).enhance(1.15)
+
+    # 저장 (높은 품질)
+    out_path = img_path.parent / f"proc_{img_path.name}"
+    img.save(out_path, "JPEG", quality=95, optimize=True)
+
+    orig_kb  = img_path.stat().st_size // 1024
+    proc_kb  = out_path.stat().st_size // 1024
+    print(
+        f"[fitting] 업스케일 완료: {w}×{h} → {new_w}×{new_h}px "
+        f"({orig_kb}KB → {proc_kb}KB)"
+    )
+
+    # 원본(미처리) 파일 삭제
+    img_path.unlink(missing_ok=True)
+    return out_path
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # 가상 피팅 이미지 생성 우선순위
 #
-#  ① IDM-VTON      — 업계 표준 Virtual Try-On. 얼굴·체형·포즈 완전 보존 +
-#                    한복 이미지 디자인 정확 합성. (한복 image_url 필요)
-#  ② OOTDiffusion  — IDM-VTON 폴백. 동등 품질의 가상 피팅. (한복 image_url 필요)
-#  ③ FLUX.1-schnell — HuggingFace Inference API. 텍스트→이미지.
+#  ① CatVTON       — 2024 SOTA. 전신 피팅, 자연스러운 주름·재질 표현.
+#                    cloth_type='overall' → 한복 전신 합성. (한복 image_url 필요)
+#  ② IDM-VTON      — 업계 표준 Virtual Try-On. 얼굴·체형·포즈 완전 보존.
+#                    (한복 image_url 필요)
+#  ③ OOTDiffusion  — IDM-VTON 폴백. 동등 품질의 가상 피팅. (한복 image_url 필요)
+#  ④ FLUX.1-schnell — HuggingFace Inference API. 텍스트→이미지.
 #                    HF_TOKEN 필요. 한복 이미지 불필요.
-#  ④ Pollinations  — 완전 무료 최후 수단. API키 불필요.
+#  ⑤ Pollinations  — 완전 무료 최후 수단. API키 불필요.
 #
-#  ①②는 hanbok.image_url이 있을 때만 진짜 Virtual Try-On 동작.
-#  image_url 없으면 ③④ 텍스트 기반 생성으로 자동 폴백.
+#  ①②③은 hanbok.image_url이 있을 때만 진짜 Virtual Try-On 동작.
+#  image_url 없으면 ④⑤ 텍스트 기반 생성으로 자동 폴백.
 # ──────────────────────────────────────────────────────────────────────────────
 
 
-# ── ① IDM-VTON (진짜 가상 피팅 — 최고 품질) ─────────────────
+# ── ① CatVTON (2024 SOTA 가상 피팅 — 최우선) ────────────────
+# HuggingFace Space: zhengchong/CatVTON
+# 입력: 사람 사진 + 한복 이미지, cloth_type='overall' (전신)
+# 출력: 자연스러운 주름·재질 표현, 얼굴·체형 보존
+
+async def _catvton_try_on(
+    person_path: Path,
+    garment_path: Path,
+) -> Optional[Path]:
+    """CatVTON: 2024 SOTA 가상 피팅. 전신(overall) 모드로 한복 합성."""
+    try:
+        from gradio_client import Client, handle_file
+    except ImportError:
+        print("[fitting] gradio_client 미설치 → CatVTON 건너뜀")
+        return None
+
+    def _sync_call():
+        client = Client(
+            "zhengchong/CatVTON",
+            token=settings.HF_TOKEN or None,
+            ssl_verify=False,
+        )
+        return client.predict(
+            person_image={
+                "background": handle_file(str(person_path)),
+                "layers":    [],
+                "composite": None,
+            },
+            cloth_image=handle_file(str(garment_path)),
+            cloth_type="overall",        # 한복 = 상하의 전체 전신 교체
+            num_inference_steps=50,
+            guidance_scale=2.5,
+            seed=42,
+            show_type="result only",     # 결과 이미지만 반환
+            api_name="/submit_function",
+        )
+
+    print("[fitting] ① CatVTON 가상 피팅 시도 (최대 3분 소요)...")
+    try:
+        loop = asyncio.get_event_loop()
+        result = await asyncio.wait_for(
+            loop.run_in_executor(None, _sync_call),
+            timeout=180.0,
+        )
+        # result = Image dict(path, url, ...)
+        if isinstance(result, dict):
+            fitted_path = Path(result.get("path") or "")
+        else:
+            fitted_path = Path(str(result))
+
+        if fitted_path.exists() and fitted_path.stat().st_size > 1000:
+            out_path = settings.UPLOAD_DIR / f"result_{uuid.uuid4()}.jpg"
+            out_path.write_bytes(fitted_path.read_bytes())
+            print(f"[fitting] ✅ CatVTON 성공 → {out_path.name}")
+            try:
+                out_path = _postprocess_result(out_path)
+                print(f"[fitting] ✅ 후처리 완료 → {out_path.name}")
+            except Exception as pe:
+                print(f"[fitting] 후처리 오류 (원본 사용): {pe}")
+            return out_path
+        print("[fitting] CatVTON: 결과 이미지가 없거나 비정상 크기")
+    except asyncio.TimeoutError:
+        print("[fitting] CatVTON 타임아웃 (3분 초과)")
+    except Exception as e:
+        print(f"[fitting] CatVTON 오류: {type(e).__name__}: {e}")
+
+    return None
+
+
+# ── ② IDM-VTON (가상 피팅 — CatVTON 폴백) ───────────────────
 # HuggingFace Space: yisol/IDM-VTON
 # 입력: 사람 사진 + 한복 이미지 + 한복 설명
 # 출력: 사람 얼굴·체형·포즈 그대로 + 한복 합성
@@ -106,7 +272,7 @@ async def _idm_vton_try_on(
     garment_path: Path,
     garment_desc: str,
 ) -> Optional[Path]:
-    """IDM-VTON: 업계 표준 Virtual Try-On. 얼굴·체형 100% 보존 + 한복 합성."""
+    """IDM-VTON: 업계 표준 Virtual Try-On. 얼굴·체형 100% 보존 + 한복 합성. (CatVTON 폴백)"""
     try:
         from gradio_client import Client, handle_file
     except ImportError:
@@ -114,30 +280,35 @@ async def _idm_vton_try_on(
         return None
 
     def _sync_call():
+        # 전신 마스크 생성: 목 아래 전신을 흰색으로 표시
+        mask_path = _create_fullbody_mask(person_path)
+
         client = Client(
             "yisol/IDM-VTON",
             token=settings.HF_TOKEN or None,
-            ssl_verify=False,        # Windows 프록시 SSL 우회
+            ssl_verify=False,
         )
-        # vton_img: 사람 사진 (ImageEditor 형식)
-        # garm_img: 한복 이미지
-        # is_checked=True: 자동 마스크 생성 (옷 영역만 교체, 얼굴·배경 보존)
-        return client.predict(
-            dict={
-                "background": handle_file(str(person_path)),
-                "layers": [],
-                "composite": None,
-            },
-            garm_img=handle_file(str(garment_path)),
-            garment_des=garment_desc,
-            is_checked=True,       # 자동 마스크: 얼굴·머리·배경 보존
-            is_checked_crop=False,
-            denoise_steps=30,      # 품질과 속도의 균형
-            seed=42,
-            api_name="/tryon",
-        )
+        try:
+            # is_checked=False → 수동 마스크(layers) 사용
+            # layers에 전신 마스크를 넣어 상·하의 모두 한복으로 교체
+            return client.predict(
+                dict={
+                    "background": handle_file(str(person_path)),
+                    "layers":     [handle_file(str(mask_path))],
+                    "composite":  None,
+                },
+                garm_img=handle_file(str(garment_path)),
+                garment_des=garment_desc,
+                is_checked=False,      # 수동 전신 마스크 사용 (자동 상체 마스크 비활성화)
+                is_checked_crop=False,
+                denoise_steps=40,      # 최대 품질 (max=40)
+                seed=42,
+                api_name="/tryon",
+            )
+        finally:
+            mask_path.unlink(missing_ok=True)  # 임시 마스크 파일 정리
 
-    print("[fitting] ① IDM-VTON 가상 피팅 시도 (최대 3분 소요)...")
+    print("[fitting] ② IDM-VTON 가상 피팅 시도 (최대 3분 소요)...")
     try:
         loop = asyncio.get_event_loop()
         result = await asyncio.wait_for(
@@ -150,6 +321,12 @@ async def _idm_vton_try_on(
             out_path = settings.UPLOAD_DIR / f"result_{uuid.uuid4()}.jpg"
             out_path.write_bytes(fitted_path.read_bytes())
             print(f"[fitting] ✅ IDM-VTON 성공 → {out_path.name}")
+            # 후처리: 신발 페이드 + 2× 업스케일 + 샤프닝
+            try:
+                out_path = _postprocess_result(out_path)
+                print(f"[fitting] ✅ 후처리 완료 → {out_path.name}")
+            except Exception as pe:
+                print(f"[fitting] 후처리 오류 (원본 사용): {pe}")
             return out_path
         print("[fitting] IDM-VTON: 결과 이미지가 없거나 비정상 크기")
     except asyncio.TimeoutError:
@@ -189,7 +366,7 @@ async def _ootd_try_on(
             api_name="/process_dc",
         )
 
-    print("[fitting] ② OOTDiffusion 가상 피팅 시도 (최대 3분 소요)...")
+    print("[fitting] ③ OOTDiffusion 가상 피팅 시도 (최대 3분 소요)...")
     try:
         loop = asyncio.get_event_loop()
         result = await asyncio.wait_for(
@@ -202,6 +379,10 @@ async def _ootd_try_on(
             out_path = settings.UPLOAD_DIR / f"result_{uuid.uuid4()}.jpg"
             out_path.write_bytes(fitted_path.read_bytes())
             print(f"[fitting] ✅ OOTDiffusion 성공 → {out_path.name}")
+            try:
+                out_path = _postprocess_result(out_path)
+            except Exception as pe:
+                print(f"[fitting] 후처리 오류 (원본 사용): {pe}")
             return out_path
         print("[fitting] OOTDiffusion: 결과 이미지 없음")
     except asyncio.TimeoutError:
@@ -335,7 +516,9 @@ async def _generate_fitting_image(photo_path: Path, hanbok: dict) -> Optional[Pa
     try:
         # 진짜 Virtual Try-On (한복 이미지 있을 때)
         if garment_path and garment_path.exists():
-            result = await _idm_vton_try_on(photo_path, garment_path, garment_desc)
+            result = await _catvton_try_on(photo_path, garment_path)
+            if not result:
+                result = await _idm_vton_try_on(photo_path, garment_path, garment_desc)
             if not result:
                 result = await _ootd_try_on(photo_path, garment_path)
 

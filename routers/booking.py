@@ -36,8 +36,10 @@ async def create_booking(data: BookingCreate):
         ("이름 / Name",              data.name),
         ("이메일 / Email",            data.email or "—"),
         ("추가 연락수단 / Contact",    data.phone or "—"),
-        ("예약 날짜 / Date",           data.booking_date or "—"),
         ("한복 / Hanbok",             f"{data.hanbok_title} ({data.hanbok_id})" if data.hanbok_title else data.hanbok_id or "—"),
+        ("대여 유형 / Rental Type",   data.rental_type or "—"),
+        ("대여일 / Rental Date",      data.booking_date or "—"),
+        ("반납일 / Return Date",      data.return_date or "—"),
     ]
     table_rows = "".join(
         f"<tr><td style='padding:8px 16px;color:#666;font-size:13px;border-bottom:1px solid #f0f0f0'>{k}</td>"

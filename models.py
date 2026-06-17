@@ -5,6 +5,9 @@ from typing import Optional
 class HanbokItem(BaseModel):
     id: str
     title: str
+    title_en: Optional[str] = None
+    title_zh: Optional[str] = None
+    title_ja: Optional[str] = None
     category: Optional[str] = None
     color: Optional[str] = None
     size: Optional[str] = None
@@ -34,5 +37,7 @@ class BookingCreate(BaseModel):
     phone: Optional[str] = None
     email: Optional[str] = None
     booking_date: Optional[str] = None
+    return_date: Optional[str] = None
+    rental_type: Optional[str] = None
     hanbok_id: Optional[str] = None
     hanbok_title: Optional[str] = None

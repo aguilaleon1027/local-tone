@@ -1,15 +1,19 @@
-import certifi, httpx
+import ssl, httpx
 
-# Windows에서 httpx SSL 인증서 오류 패치
+# ── Windows 기업 프록시 환경 SSL 전역 패치 ──────────────────────────────────
+# 기업 프록시가 HTTPS를 인터셉트해 자체 인증서를 주입하므로
+# certifi 번들로는 검증 실패 → verify=False 로 SSL 검증 완전 우회
+ssl._create_default_https_context = ssl._create_unverified_context
+
 _orig_client = httpx.Client.__init__
 def _patched_client(self, *args, **kwargs):
-    kwargs.setdefault('verify', certifi.where())
+    kwargs.setdefault('verify', False)
     _orig_client(self, *args, **kwargs)
 httpx.Client.__init__ = _patched_client
 
 _orig_async = httpx.AsyncClient.__init__
 def _patched_async(self, *args, **kwargs):
-    kwargs.setdefault('verify', certifi.where())
+    kwargs.setdefault('verify', False)
     _orig_async(self, *args, **kwargs)
 httpx.AsyncClient.__init__ = _patched_async
 
