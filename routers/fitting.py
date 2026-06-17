@@ -309,14 +309,14 @@ async def _kolors_try_on(
             token=settings.HF_TOKEN or None,
             ssl_verify=False,
         )
-        # fn_index=2 : Space 업데이트로 /tryon API명이 제거됨
-        # 실제 피팅 함수는 unnamed endpoint (fn_index=2)에 위치
-        # 입력: (human_img, garm_img, garment_des, is_checked)
+        # fn_index=2: Space 업데이트로 API 구조 변경
+        # 입력: Person image, Garment image, Seed(int), Random seed(bool)
+        # 출력: Result image, Seed used(int), Response(str)
         return client.predict(
-            handle_file(str(person_path)),
-            handle_file(str(garment_path)),
-            garment_desc,
-            True,       # is_checked: 자동 마스크 생성
+            handle_file(str(person_path)),  # Person image
+            handle_file(str(garment_path)), # Garment image
+            42,                             # Seed
+            False,                          # Random seed (False = 고정 시드 사용)
             fn_index=2,
         )
 
@@ -327,16 +327,21 @@ async def _kolors_try_on(
             loop.run_in_executor(None, _sync_call),
             timeout=180.0,
         )
-        # result = (Image, Image) 튜플 → 첫 번째가 결과 이미지
+        # result = (Result image, Seed used, Response) 튜플
+        # result[0] = 결과 이미지 (dict with 'path' key)
         if isinstance(result, (list, tuple)):
             item = result[0]
         else:
             item = result
 
+        print(f"[fitting] Kolors raw result[0] type={type(item).__name__} value={str(item)[:120]}")
+
         if isinstance(item, dict):
             fitted_path = Path(item.get("path") or "")
-        else:
+        elif item is not None:
             fitted_path = Path(str(item))
+        else:
+            fitted_path = Path("")
 
         if fitted_path.exists() and fitted_path.stat().st_size > 1000:
             out_path = settings.UPLOAD_DIR / f"result_{uuid.uuid4()}.jpg"
