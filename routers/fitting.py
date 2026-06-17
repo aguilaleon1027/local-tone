@@ -181,14 +181,14 @@ def _postprocess_result(img_path: Path) -> Path:
 #
 #  ① Fashn.ai      — 상용 API, 현재 업계 최고 품질. FASHN_API_KEY 필요.
 #                    category='full-body' → 한복 전신 합성에 최적.
-#  ② CatVTON       — 2024 SOTA HF Space. 무료. cloth_type='overall'.
-#  ③ IDM-VTON      — 업계 표준 Virtual Try-On. 얼굴·체형·포즈 보존.
-#  ④ OOTDiffusion  — IDM-VTON 폴백.
-#  ⑤ FLUX.1-schnell — 텍스트→이미지. HF_TOKEN 필요.
-#  ⑥ Pollinations  — 완전 무료 최후 수단.
+#  ② IDM-VTON      — 업계 표준 Virtual Try-On. 얼굴·체형·포즈 보존.
+#                    ZeroGPU 무료 60초 제한 있음.
+#  ③ CatVTON       — 2024 SOTA HF Space. 무료. cloth_type='overall'.
+#  ④ OOTDiffusion  — IDM-VTON/CatVTON 폴백.
+#  ⑤ Pollinations  — 완전 무료, 텍스트→이미지. 항상 작동하는 최후 수단.
 #
 #  ①②③④는 hanbok.image_url이 있을 때만 진짜 Virtual Try-On 동작.
-#  image_url 없으면 ⑤⑥ 텍스트 기반 생성으로 자동 폴백.
+#  image_url 없거나 위 모두 실패 시 ⑤ 텍스트 기반 생성으로 자동 폴백.
 # ──────────────────────────────────────────────────────────────────────────────
 
 
@@ -262,10 +262,10 @@ async def _fashn_try_on(
                     if img_resp.status_code == 200 and len(img_resp.content) > 1000:
                         out_path = settings.UPLOAD_DIR / f"result_{uuid.uuid4()}.jpg"
                         out_path.write_bytes(img_resp.content)
-                        print(f"[fitting] ✅ Fashn.ai 성공 → {out_path.name}")
+                        print(f"[fitting] [OK] Fashn.ai 성공 -> {out_path.name}")
                         try:
                             out_path = _postprocess_result(out_path)
-                            print(f"[fitting] ✅ 후처리 완료 → {out_path.name}")
+                            print(f"[fitting] [OK] 후처리 완료 -> {out_path.name}")
                         except Exception as pe:
                             print(f"[fitting] 후처리 오류 (원본 사용): {pe}")
                         return out_path
@@ -341,10 +341,10 @@ async def _kolors_try_on(
         if fitted_path.exists() and fitted_path.stat().st_size > 1000:
             out_path = settings.UPLOAD_DIR / f"result_{uuid.uuid4()}.jpg"
             out_path.write_bytes(fitted_path.read_bytes())
-            print(f"[fitting] ✅ Kolors 성공 → {out_path.name}")
+            print(f"[fitting] [OK] Kolors 성공 -> {out_path.name}")
             try:
                 out_path = _postprocess_result(out_path)
-                print(f"[fitting] ✅ 후처리 완료 → {out_path.name}")
+                print(f"[fitting] [OK] 후처리 완료 -> {out_path.name}")
             except Exception as pe:
                 print(f"[fitting] 후처리 오류 (원본 사용): {pe}")
             return out_path
@@ -410,10 +410,10 @@ async def _catvton_try_on(
         if fitted_path.exists() and fitted_path.stat().st_size > 1000:
             out_path = settings.UPLOAD_DIR / f"result_{uuid.uuid4()}.jpg"
             out_path.write_bytes(fitted_path.read_bytes())
-            print(f"[fitting] ✅ CatVTON 성공 → {out_path.name}")
+            print(f"[fitting] [OK] CatVTON 성공 -> {out_path.name}")
             try:
                 out_path = _postprocess_result(out_path)
-                print(f"[fitting] ✅ 후처리 완료 → {out_path.name}")
+                print(f"[fitting] [OK] 후처리 완료 -> {out_path.name}")
             except Exception as pe:
                 print(f"[fitting] 후처리 오류 (원본 사용): {pe}")
             return out_path
@@ -484,11 +484,11 @@ async def _idm_vton_try_on(
         if fitted_path.exists() and fitted_path.stat().st_size > 1000:
             out_path = settings.UPLOAD_DIR / f"result_{uuid.uuid4()}.jpg"
             out_path.write_bytes(fitted_path.read_bytes())
-            print(f"[fitting] ✅ IDM-VTON 성공 → {out_path.name}")
+            print(f"[fitting] [OK] IDM-VTON 성공 -> {out_path.name}")
             # 후처리: 신발 페이드 + 2× 업스케일 + 샤프닝
             try:
                 out_path = _postprocess_result(out_path)
-                print(f"[fitting] ✅ 후처리 완료 → {out_path.name}")
+                print(f"[fitting] [OK] 후처리 완료 -> {out_path.name}")
             except Exception as pe:
                 print(f"[fitting] 후처리 오류 (원본 사용): {pe}")
             return out_path
@@ -542,7 +542,7 @@ async def _ootd_try_on(
         if fitted_path.exists() and fitted_path.stat().st_size > 1000:
             out_path = settings.UPLOAD_DIR / f"result_{uuid.uuid4()}.jpg"
             out_path.write_bytes(fitted_path.read_bytes())
-            print(f"[fitting] ✅ OOTDiffusion 성공 → {out_path.name}")
+            print(f"[fitting] [OK] OOTDiffusion 성공 -> {out_path.name}")
             try:
                 out_path = _postprocess_result(out_path)
             except Exception as pe:
@@ -599,7 +599,7 @@ async def _hf_flux_generate(hanbok: dict) -> Optional[Path]:
             if resp.status_code == 200 and len(resp.content) > 2000:
                 out_path = settings.UPLOAD_DIR / f"result_{uuid.uuid4()}.jpg"
                 out_path.write_bytes(resp.content)
-                print(f"[fitting] ✅ FLUX.1-schnell 성공 → {out_path.name}")
+                print(f"[fitting] [OK] FLUX.1-schnell 성공 -> {out_path.name}")
                 return out_path
             print(f"[fitting] FLUX 실패: HTTP {resp.status_code} — {resp.text[:200]}")
     except Exception as e:
@@ -617,18 +617,30 @@ async def _pollinations_fallback(hanbok: dict) -> Optional[Path]:
     color    = hanbok.get("color", "")
     category = hanbok.get("category", "")
 
+    # 카테고리로 성별 판단 → 더 사실적인 프롬프트
+    if category in ("남성",):
+        gender_phrase = "handsome young Korean man"
+    elif category in ("여성",):
+        gender_phrase = "beautiful young Korean woman"
+    elif category in ("아동",):
+        gender_phrase = "cute Korean child"
+    else:
+        gender_phrase = "elegant Korean person"
+
     prompt = (
-        f"Photorealistic full-body portrait of a Korean person wearing "
-        f"traditional {category + ' ' if category else ''}Korean hanbok '{title}'"
-        + (f", {color} color" if color else "")
-        + ". Traditional Korean palace garden background, "
-        "soft natural lighting, professional fashion photography, full body shot, 4K"
+        f"Professional fashion photography, full-body portrait of a {gender_phrase} "
+        f"wearing traditional Korean hanbok called '{title}'"
+        + (f", {color} colored hanbok" if color else "")
+        + ". Standing gracefully in a traditional Korean palace garden with "
+        "dancheong painted wooden architecture. Soft natural daylight, "
+        "4K ultra-detailed, photorealistic, high-end fashion editorial style, "
+        "face clearly visible, full body visible, white background."
     )
     url = (
         f"https://image.pollinations.ai/prompt/{urllib.parse.quote(prompt)}"
-        "?width=768&height=1024&nologo=true&model=flux"
+        "?width=768&height=1024&nologo=true&model=flux&seed=42"
     )
-    print("[fitting] ④ Pollinations 폴백 시도...")
+    print("[fitting] [Pollinations] fallback 시도...")
 
     try:
         async with httpx.AsyncClient(timeout=120, verify=False) as http:
@@ -636,7 +648,7 @@ async def _pollinations_fallback(hanbok: dict) -> Optional[Path]:
             if resp.status_code == 200 and len(resp.content) > 2000:
                 out_path = settings.UPLOAD_DIR / f"result_{uuid.uuid4()}.jpg"
                 out_path.write_bytes(resp.content)
-                print(f"[fitting] ✅ Pollinations 성공 → {out_path.name}")
+                print(f"[fitting] [OK] Pollinations 성공 -> {out_path.name}")
                 return out_path
             print(f"[fitting] Pollinations 실패: HTTP {resp.status_code}")
     except Exception as e:
@@ -682,17 +694,13 @@ async def _generate_fitting_image(photo_path: Path, hanbok: dict) -> Optional[Pa
         if garment_path and garment_path.exists():
             result = await _fashn_try_on(photo_path, garment_path)
             if not result:
-                result = await _kolors_try_on(photo_path, garment_path, garment_desc)
+                result = await _idm_vton_try_on(photo_path, garment_path, garment_desc)
             if not result:
                 result = await _catvton_try_on(photo_path, garment_path)
             if not result:
-                result = await _idm_vton_try_on(photo_path, garment_path, garment_desc)
-            if not result:
                 result = await _ootd_try_on(photo_path, garment_path)
 
-        # 텍스트 기반 폴백
-        if not result:
-            result = await _hf_flux_generate(hanbok)
+        # 텍스트 기반 폴백 (항상 동작 보장)
         if not result:
             result = await _pollinations_fallback(hanbok)
 
