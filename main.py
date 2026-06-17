@@ -45,8 +45,14 @@ app.include_router(booking.router, prefix="/api/booking", tags=["예약"])
 app.include_router(places.router, prefix="/api/places", tags=["주변 장소"])
 
 @app.get("/health")
+@app.head("/health")
 def health():
     return {"status": "ok", "app": settings.APP_NAME}
+
+@app.head("/")
+async def root_head():
+    return FileResponse(_index())
+
 
 DIST_DIR = settings.STATIC_DIR / "dist"
 
