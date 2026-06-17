@@ -1,21 +1,21 @@
-import ssl, httpx
+import ssl, httpx, os
 
-# ── Windows 기업 프록시 환경 SSL 전역 패치 ──────────────────────────────────
-# 기업 프록시가 HTTPS를 인터셉트해 자체 인증서를 주입하므로
-# certifi 번들로는 검증 실패 → verify=False 로 SSL 검증 완전 우회
-ssl._create_default_https_context = ssl._create_unverified_context
+# ── Windows 기업 프록시 환경 SSL 전역 패치 (로컬 개발 전용) ──────────────
+# Render 배포 환경(Linux)에서는 적용하지 않음
+if os.name == 'nt':  # Windows 전용
+    ssl._create_default_https_context = ssl._create_unverified_context
 
-_orig_client = httpx.Client.__init__
-def _patched_client(self, *args, **kwargs):
-    kwargs.setdefault('verify', False)
-    _orig_client(self, *args, **kwargs)
-httpx.Client.__init__ = _patched_client
+    _orig_client = httpx.Client.__init__
+    def _patched_client(self, *args, **kwargs):
+        kwargs.setdefault('verify', False)
+        _orig_client(self, *args, **kwargs)
+    httpx.Client.__init__ = _patched_client
 
-_orig_async = httpx.AsyncClient.__init__
-def _patched_async(self, *args, **kwargs):
-    kwargs.setdefault('verify', False)
-    _orig_async(self, *args, **kwargs)
-httpx.AsyncClient.__init__ = _patched_async
+    _orig_async = httpx.AsyncClient.__init__
+    def _patched_async(self, *args, **kwargs):
+        kwargs.setdefault('verify', False)
+        _orig_async(self, *args, **kwargs)
+    httpx.AsyncClient.__init__ = _patched_async
 
 from pathlib import Path
 from fastapi import FastAPI
