@@ -85,31 +85,34 @@ function Step1({ onNext }) {
         onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
-        className={`relative rounded-2xl border-2 border-dashed transition-all duration-300 overflow-hidden ${
-          dragging  ? 'border-hwang bg-hwang/5 scale-[1.01]' :
-          preview   ? 'border-stone/30 cursor-default' :
-                      'border-hwang/40 hover:border-hwang hover:bg-hwang/5 bg-bg cursor-pointer'
-        }`}
-        style={{ minHeight: '220px' }}
+        className="relative rounded-2xl border-2 border-dashed transition-all duration-300 overflow-hidden"
+        style={{
+          minHeight: '220px',
+          borderColor: dragging ? '#0022FE' : preview ? '#BDD6FF' : '#BDD6FF',
+          background:  dragging ? '#EEF3FF' : preview ? 'transparent' : '#F5F8FF',
+          transform:   dragging ? 'scale(1.01)' : 'scale(1)',
+          cursor:      preview ? 'default' : 'pointer',
+        }}
       >
         {preview ? (
           <div className="relative">
             <img src={preview} alt="preview" className="w-full object-cover rounded-2xl max-h-64" />
             <button
               onClick={(e) => { e.stopPropagation(); setFile(null); setPreview(null) }}
-              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors"
+              className="absolute top-3 right-3 w-8 h-8 rounded-full backdrop-blur-sm flex items-center justify-center text-white transition-colors"
+              style={{ background: 'rgba(0,0,0,0.4)' }}
             >
               <X size={14} />
             </button>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center gap-3 py-12 px-6">
-            <div className="w-14 h-14 rounded-2xl bg-hwang/10 flex items-center justify-center">
-              <Upload size={24} className="text-hwang" strokeWidth={1.5} />
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: '#E0EEFF' }}>
+              <Upload size={24} strokeWidth={1.5} style={{ color: '#0022FE' }} />
             </div>
             <div className="text-center">
-              <p className="font-sans text-ink text-sm font-medium">사진을 드래그하거나 클릭하여 업로드</p>
-              <p className="font-sans text-stone text-xs mt-1">JPG, PNG, WEBP · 최대 10MB</p>
+              <p className="font-sans text-sm font-medium" style={{ color: '#0022FE' }}>사진을 드래그하거나 클릭하여 업로드</p>
+              <p className="font-sans text-xs mt-1" style={{ color: '#4186FF' }}>JPG, PNG, WEBP · 최대 10MB</p>
             </div>
           </div>
         )}
@@ -117,15 +120,12 @@ function Step1({ onNext }) {
       </div>
 
       {/* 팁 카드 */}
-      <div className="p-4 rounded-xl" style={{ background: '#EEF3FF', border: '1px solid #BDD6FF' }}>
-        <div className="flex items-center gap-2 mb-2.5">
-          <div style={{ width: '3px', height: '14px', background: '#015DFE', borderRadius: '2px', flexShrink: 0 }} />
-          <p className="font-serif text-[11px] font-bold" style={{ color: '#0022FE' }}>좋은 결과를 위한 팁</p>
-        </div>
+      <div className="card p-4" style={{ border: '1px solid #BDD6FF' }}>
+        <p className="font-sans text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: '#4186FF' }}>좋은 결과를 위한 팁</p>
         <ul className="space-y-1.5">
           {['정면을 바라보는 전신 사진', '밝고 깨끗한 배경', '몸 전체가 나오는 구도'].map((t) => (
-            <li key={t} className="flex items-center gap-2 font-sans text-[11px]" style={{ color: '#4186FF' }}>
-              <span className="font-serif flex-shrink-0" style={{ color: '#015DFE', fontSize: '9px' }}>◈</span>
+            <li key={t} className="flex items-center gap-2 font-sans text-xs" style={{ color: '#4186FF' }}>
+              <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: '#0022FE' }} />
               {t}
             </li>
           ))}
@@ -439,7 +439,7 @@ export default function FittingWizard({ catalog = [] }) {
   const reset = () => { setStep(0); setPhotoId(null); setHanbok(null); setPrefillId(null) }
 
   return (
-    <div className="p-5 rounded-2xl" style={{ background: '#FFFFFF', border: '1px solid #BDD6FF' }}>
+    <div className="p-5 rounded-2xl" style={{ background: '#FFFFFF', boxShadow: '0 2px 16px rgba(0,34,254,0.07)' }}>
       <StepIndicator current={step} />
       <AnimatePresence mode="wait" custom={dir}>
         <motion.div key={step} custom={dir} variants={slide} initial="enter" animate="center" exit="exit">

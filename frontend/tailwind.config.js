@@ -12,15 +12,15 @@ export default {
         border:  '#BDD6FF',    // 소프트 경계선
         hwang:   '#015DFE',    // accent (원래 B8975A 역할)
         gold:    '#015DFE',
-        ink:     '#0022FE',    // 메인 (원래 3D2314 역할)
+        ink:     '#1A1A3E',    // 본문 텍스트 (진한 네이비)
         cream:   '#EEF3FF',
         muted:   '#4186FF',    // 중간 (원래 6B4C35 역할)
         stone:   '#4186FF',    // 뮤트 (원래 9C8572 역할)
         dancheong: '#015DFE',
       },
       fontFamily: {
-        sans:  ['"Pretendard Variable"', 'Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
-        serif: ['"Noto Serif KR"', 'serif'],
+        sans:  ['"Gowun Batang"', 'serif'],
+        serif: ['"Hahmlet"', '"Gowun Batang"', 'serif'],
       },
       animation: {
         'marquee': 'marquee 40s linear infinite',

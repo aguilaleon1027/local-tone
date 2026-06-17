@@ -19,7 +19,9 @@ class Settings(BaseSettings):
     FITTING_MOCK_DELAY_SECONDS: float = 2.5
 
     GEMINI_API_KEY: str = ""
+    # 텍스트 분석·추천용 모델 (인물 분석, 스타일 추천)
     GEMINI_MODEL: str = "gemini-2.5-flash"
+    # 이미지 생성 모델은 routers/fitting.py 의 _IMAGE_GEN_MODELS 참고
     HF_TOKEN: str = ""
 
     SUPABASE_URL: str = ""

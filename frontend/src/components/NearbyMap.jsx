@@ -38,11 +38,12 @@ function pinSVG(n, active = false) {
 /* ─── SDK 로드 (services + clusterer) ─── */
 function loadKakaoMaps(appKey) {
   return new Promise((resolve, reject) => {
+    // 이미 완전히 로드된 경우
     if (window.kakao?.maps?.Map) { resolve(); return }
 
     const init = () => {
       if (window.kakao?.maps?.load) {
-        window.kakao.maps.load(resolve)
+        window.kakao.maps.load(() => resolve())
       } else {
         reject(new Error('Kakao Maps 초기화 실패'))
       }
@@ -50,14 +51,20 @@ function loadKakaoMaps(appKey) {
 
     const existing = document.querySelector('script[src*="dapi.kakao.com/v2/maps"]')
     if (existing) {
-      window.kakao?.maps ? init() : existing.addEventListener('load', init)
-      existing.addEventListener('error', reject)
+      // 스크립트는 있지만 아직 로드 중인 경우
+      if (existing.dataset.loaded === 'true') {
+        // 이미 load 이벤트가 발생했지만 kakao.maps.Map이 없음 → init 재시도
+        init()
+      } else {
+        existing.addEventListener('load', () => { existing.dataset.loaded = 'true'; init() })
+        existing.addEventListener('error', () => reject(new Error('Kakao Maps SDK 로드 실패')))
+      }
       return
     }
 
     const s = document.createElement('script')
     s.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${appKey}&autoload=false&libraries=services,clusterer`
-    s.addEventListener('load', init)
+    s.addEventListener('load', () => { s.dataset.loaded = 'true'; init() })
     s.addEventListener('error', () => reject(new Error('Kakao Maps SDK 로드 실패')))
     document.head.appendChild(s)
   })
@@ -109,6 +116,7 @@ export default function NearbyMap({ appKey }) {
   const skipMapClick  = useRef(false)
 
   const [mapReady,      setMapReady]      = useState(false)
+  const [mapError,      setMapError]      = useState(null)
   const [category,      setCategory]      = useState('맛집')
   const [searchCenter,  setSearchCenter]  = useState(SHOP)   // 현재 검색 기준 좌표
   const [moved,         setMoved]         = useState(false)   // 지도 이동 감지
@@ -123,6 +131,7 @@ export default function NearbyMap({ appKey }) {
   /* 카카오맵 초기화 */
   useEffect(() => {
     if (!appKey) return
+    setMapError(null)
     loadKakaoMaps(appKey)
       .then(() => {
         if (!containerRef.current || mapRef.current) return
@@ -171,7 +180,10 @@ export default function NearbyMap({ appKey }) {
 
         setMapReady(true)
       })
-      .catch(console.error)
+      .catch((err) => {
+        console.error(err)
+        setMapError(err.message || '지도 로드 실패')
+      })
   }, [appKey])
 
   /* 검색 (카테고리 or 검색 중심 변경 시) */
@@ -252,19 +264,25 @@ export default function NearbyMap({ appKey }) {
     <div className="h-full flex flex-col overflow-hidden">
 
       {/* 카테고리 필터 */}
-      <div className="flex-none px-4 py-2.5" style={{ background: '#FFFFFF', borderBottom: '1px solid #BDD6FF' }}>
-        <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
+      <div className="flex-none" style={{ background: '#FFFFFF', borderBottom: '1px solid #F0F0F5' }}>
+        <div className="flex overflow-x-auto no-scrollbar">
           {CATEGORIES.map(c => (
             <motion.button
               key={c.id}
-              whileTap={{ scale: 0.94 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => { setCategory(c.id); setMoved(false) }}
-              className="flex-none flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] whitespace-nowrap transition-all duration-150"
-              style={category === c.id
-                ? { background: '#0022FE', color: '#FFFFFF', fontWeight: 700 }
-                : { background: '#FFFFFF', color: '#4186FF', fontWeight: 500, border: '1px solid #BDD6FF' }}
+              className="relative flex-none px-5 py-3.5 text-[13px] whitespace-nowrap font-sans transition-colors duration-150"
+              style={{ color: category === c.id ? '#1A1A3E' : '#ABABAB', fontWeight: category === c.id ? 700 : 400 }}
             >
-              <span>{c.id}</span>
+              {c.id}
+              {category === c.id && (
+                <motion.div
+                  layoutId="nearby-underline"
+                  className="absolute bottom-0 left-0 right-0"
+                  style={{ height: '2px', background: '#1A1A3E', borderRadius: '1px' }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 38 }}
+                />
+              )}
             </motion.button>
           ))}
         </div>
@@ -272,13 +290,36 @@ export default function NearbyMap({ appKey }) {
 
       {/* 지도 */}
       <div className="flex-none relative" style={{ height: '40%' }}>
-        {appKey ? (
-          <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center gap-2"
-            style={{ background: '#E0EEFF' }}>
+        {/* 지도 컨테이너 (항상 렌더링, 에러/미설정 시 숨김) */}
+        <div
+          ref={containerRef}
+          style={{ width: '100%', height: '100%', display: appKey && !mapError ? 'block' : 'none' }}
+        />
+
+        {/* API 키 미설정 */}
+        {!appKey && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2" style={{ background: '#E0EEFF' }}>
             <MapPin size={24} style={{ color: '#4186FF' }} />
             <p className="text-[12px] font-medium" style={{ color: '#4186FF' }}>VITE_KAKAO_MAP_KEY 설정 필요</p>
+          </div>
+        )}
+
+        {/* 로드 에러 */}
+        {mapError && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3" style={{ background: '#EEF3FF' }}>
+            <MapPin size={28} style={{ color: '#4186FF' }} />
+            <div className="text-center px-4">
+              <p className="text-[13px] font-bold" style={{ color: '#0022FE' }}>지도를 불러올 수 없습니다</p>
+              <p className="text-[11px] mt-1" style={{ color: '#4186FF' }}>카카오 개발자 콘솔에서 현재 도메인</p>
+              <p className="text-[11px]" style={{ color: '#4186FF' }}>({window.location.origin})을 등록해주세요</p>
+            </div>
+            <button
+              onClick={() => { setMapError(null); mapRef.current = null; }}
+              className="px-4 py-1.5 rounded-full text-[11px] font-bold"
+              style={{ background: '#0022FE', color: '#FFF' }}
+            >
+              다시 시도
+            </button>
           </div>
         )}
 
@@ -328,7 +369,7 @@ export default function NearbyMap({ appKey }) {
             exit={{    opacity: 0, y: -8 }}
             transition={{ duration: 0.16 }}
             className="flex-none mx-3 mt-2.5 rounded-2xl overflow-hidden"
-            style={{ background: '#FFFFFF', border: '1px solid #BDD6FF', boxShadow: '0 4px 20px rgba(61,35,20,0.14)' }}
+            style={{ background: '#FFFFFF', border: '1px solid #BDD6FF', boxShadow: '0 4px 20px rgba(0,34,254,0.1)' }}
           >
             <div className="px-4 pt-3.5 pb-2 flex items-start gap-2">
               <div className="flex-1 min-w-0">
