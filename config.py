@@ -20,9 +20,10 @@ class Settings(BaseSettings):
 
     GEMINI_API_KEY: str = ""
     # 텍스트 분석·추천용 모델 (인물 분석, 스타일 추천)
-    GEMINI_MODEL: str = "gemini-2.0-flash"   # 무료 티어 1,500회/일 (2.5-flash는 20회/일)
-    # 이미지 생성 모델은 routers/fitting.py 의 _IMAGE_GEN_MODELS 참고
+    # gemini-2.0-flash → 2026-06-01 종료. gemini-3.5-flash 로 마이그레이션
+    GEMINI_MODEL: str = "gemini-3.5-flash"
     HF_TOKEN: str = ""
+    FASHN_API_KEY: str = ""          # Fashn.ai Virtual Try-On API (https://fashn.ai)
 
     SUPABASE_URL: str = ""
     SUPABASE_KEY: str = ""
