@@ -179,21 +179,185 @@ def _postprocess_result(img_path: Path) -> Path:
 # ──────────────────────────────────────────────────────────────────────────────
 # 가상 피팅 이미지 생성 우선순위
 #
-#  ① CatVTON       — 2024 SOTA. 전신 피팅, 자연스러운 주름·재질 표현.
-#                    cloth_type='overall' → 한복 전신 합성. (한복 image_url 필요)
-#  ② IDM-VTON      — 업계 표준 Virtual Try-On. 얼굴·체형·포즈 완전 보존.
-#                    (한복 image_url 필요)
-#  ③ OOTDiffusion  — IDM-VTON 폴백. 동등 품질의 가상 피팅. (한복 image_url 필요)
-#  ④ FLUX.1-schnell — HuggingFace Inference API. 텍스트→이미지.
-#                    HF_TOKEN 필요. 한복 이미지 불필요.
-#  ⑤ Pollinations  — 완전 무료 최후 수단. API키 불필요.
+#  ① Fashn.ai      — 상용 API, 현재 업계 최고 품질. FASHN_API_KEY 필요.
+#                    category='full-body' → 한복 전신 합성에 최적.
+#  ② CatVTON       — 2024 SOTA HF Space. 무료. cloth_type='overall'.
+#  ③ IDM-VTON      — 업계 표준 Virtual Try-On. 얼굴·체형·포즈 보존.
+#  ④ OOTDiffusion  — IDM-VTON 폴백.
+#  ⑤ FLUX.1-schnell — 텍스트→이미지. HF_TOKEN 필요.
+#  ⑥ Pollinations  — 완전 무료 최후 수단.
 #
-#  ①②③은 hanbok.image_url이 있을 때만 진짜 Virtual Try-On 동작.
-#  image_url 없으면 ④⑤ 텍스트 기반 생성으로 자동 폴백.
+#  ①②③④는 hanbok.image_url이 있을 때만 진짜 Virtual Try-On 동작.
+#  image_url 없으면 ⑤⑥ 텍스트 기반 생성으로 자동 폴백.
 # ──────────────────────────────────────────────────────────────────────────────
 
 
-# ── ① CatVTON (2024 SOTA 가상 피팅 — 최우선) ────────────────
+# ── ① Fashn.ai (상용 API — 최우선) ──────────────────────────
+# https://fashn.ai  |  REST API  |  category="full-body" → 한복 전신 최적
+# 비동기 polling 방식: POST /v1/run → GET /v1/status/{id}
+
+async def _fashn_try_on(
+    person_path: Path,
+    garment_path: Path,
+) -> Optional[Path]:
+    """Fashn.ai: 상용 Virtual Try-On API. 현재 업계 최고 품질."""
+    if not settings.FASHN_API_KEY:
+        print("[fitting] FASHN_API_KEY 미설정 → Fashn.ai 건너뜀")
+        return None
+
+    import base64
+
+    def _to_data_url(path: Path) -> str:
+        """이미지 파일을 base64 data URL로 변환"""
+        mime = "image/jpeg" if path.suffix.lower() in (".jpg", ".jpeg") else "image/png"
+        b64  = base64.b64encode(path.read_bytes()).decode()
+        return f"data:{mime};base64,{b64}"
+
+    print("[fitting] ① Fashn.ai 가상 피팅 시도...")
+    try:
+        async with httpx.AsyncClient(verify=False, timeout=30) as http:
+            # ── Step 1: 피팅 작업 요청 ────────────────────────────
+            resp = await http.post(
+                "https://api.fashn.ai/v1/run",
+                headers={"Authorization": f"Bearer {settings.FASHN_API_KEY}"},
+                json={
+                    "model_image":        _to_data_url(person_path),
+                    "garment_image":      _to_data_url(garment_path),
+                    "category":           "full-body",   # 한복 = 상하의 전신 의상
+                    "garment_photo_type": "auto",        # 마네킹/모델/단품 자동 감지
+                    "num_samples":        1,
+                },
+            )
+            if resp.status_code != 200:
+                print(f"[fitting] Fashn.ai 요청 실패: HTTP {resp.status_code} — {resp.text[:300]}")
+                return None
+
+            run_id = resp.json().get("id")
+            if not run_id:
+                print(f"[fitting] Fashn.ai: run_id 없음 — {resp.text[:200]}")
+                return None
+
+            print(f"[fitting] Fashn.ai 작업 시작 (run_id={run_id}), 결과 대기 중...")
+
+            # ── Step 2: 결과 polling (5초 간격, 최대 150초) ───────
+            for attempt in range(30):
+                await asyncio.sleep(5)
+                status_resp = await http.get(
+                    f"https://api.fashn.ai/v1/status/{run_id}",
+                    headers={"Authorization": f"Bearer {settings.FASHN_API_KEY}"},
+                )
+                if status_resp.status_code != 200:
+                    continue
+
+                data   = status_resp.json()
+                status = data.get("status")
+
+                if status == "completed":
+                    output_urls = data.get("output", [])
+                    if not output_urls:
+                        print("[fitting] Fashn.ai: output URL 없음")
+                        return None
+                    # 결과 이미지 다운로드
+                    img_resp = await http.get(output_urls[0])
+                    if img_resp.status_code == 200 and len(img_resp.content) > 1000:
+                        out_path = settings.UPLOAD_DIR / f"result_{uuid.uuid4()}.jpg"
+                        out_path.write_bytes(img_resp.content)
+                        print(f"[fitting] ✅ Fashn.ai 성공 → {out_path.name}")
+                        try:
+                            out_path = _postprocess_result(out_path)
+                            print(f"[fitting] ✅ 후처리 완료 → {out_path.name}")
+                        except Exception as pe:
+                            print(f"[fitting] 후처리 오류 (원본 사용): {pe}")
+                        return out_path
+                    print("[fitting] Fashn.ai: 이미지 다운로드 실패")
+                    return None
+
+                elif status == "failed":
+                    print(f"[fitting] Fashn.ai 실패: {data.get('error')}")
+                    return None
+
+                print(f"[fitting] Fashn.ai 대기 ({attempt + 1}/30, status={status})")
+
+            print("[fitting] Fashn.ai 타임아웃 (150초 초과)")
+
+    except Exception as e:
+        print(f"[fitting] Fashn.ai 오류: {type(e).__name__}: {e}")
+
+    return None
+
+
+# ── ② Kolors-Virtual-Try-On (아시아 전통 의상 특화 — Fashn.ai 폴백) ──
+# HuggingFace Space: Kwai-Kolors/Kolors-Virtual-Try-On
+# 쾌수(Kuaishou) 제작. 아시아 전통 의상(한복 등)에 상대적으로 강함.
+# 입력: 사람 사진 + 의상 이미지 + 의상 설명
+
+async def _kolors_try_on(
+    person_path: Path,
+    garment_path: Path,
+    garment_desc: str = "Traditional Korean Hanbok",
+) -> Optional[Path]:
+    """Kolors Virtual Try-On: 아시아 전통 의상 특화 모델."""
+    try:
+        from gradio_client import Client, handle_file
+    except ImportError:
+        print("[fitting] gradio_client 미설치 → Kolors 건너뜀")
+        return None
+
+    def _sync_call():
+        client = Client(
+            "Kwai-Kolors/Kolors-Virtual-Try-On",
+            token=settings.HF_TOKEN or None,
+            ssl_verify=False,
+        )
+        return client.predict(
+            human_img=handle_file(str(person_path)),
+            garm_img=handle_file(str(garment_path)),
+            garment_des=garment_desc,
+            is_checked=True,
+            is_checked_crop=False,
+            denoise_steps=30,
+            seed=42,
+            api_name="/tryon",
+        )
+
+    print("[fitting] ① Kolors Virtual Try-On 시도 (최대 3분 소요)...")
+    try:
+        loop = asyncio.get_event_loop()
+        result = await asyncio.wait_for(
+            loop.run_in_executor(None, _sync_call),
+            timeout=180.0,
+        )
+        # result = (Image, Image) 튜플 → 첫 번째가 결과 이미지
+        if isinstance(result, (list, tuple)):
+            item = result[0]
+        else:
+            item = result
+
+        if isinstance(item, dict):
+            fitted_path = Path(item.get("path") or "")
+        else:
+            fitted_path = Path(str(item))
+
+        if fitted_path.exists() and fitted_path.stat().st_size > 1000:
+            out_path = settings.UPLOAD_DIR / f"result_{uuid.uuid4()}.jpg"
+            out_path.write_bytes(fitted_path.read_bytes())
+            print(f"[fitting] ✅ Kolors 성공 → {out_path.name}")
+            try:
+                out_path = _postprocess_result(out_path)
+                print(f"[fitting] ✅ 후처리 완료 → {out_path.name}")
+            except Exception as pe:
+                print(f"[fitting] 후처리 오류 (원본 사용): {pe}")
+            return out_path
+        print("[fitting] Kolors: 결과 이미지가 없거나 비정상 크기")
+    except asyncio.TimeoutError:
+        print("[fitting] Kolors 타임아웃 (3분 초과)")
+    except Exception as e:
+        print(f"[fitting] Kolors 오류: {type(e).__name__}: {e}")
+
+    return None
+
+
+# ── ③ CatVTON (2024 SOTA 가상 피팅 — Kolors 폴백) ─────────
 # HuggingFace Space: zhengchong/CatVTON
 # 입력: 사람 사진 + 한복 이미지, cloth_type='overall' (전신)
 # 출력: 자연스러운 주름·재질 표현, 얼굴·체형 보존
@@ -516,7 +680,11 @@ async def _generate_fitting_image(photo_path: Path, hanbok: dict) -> Optional[Pa
     try:
         # 진짜 Virtual Try-On (한복 이미지 있을 때)
         if garment_path and garment_path.exists():
-            result = await _catvton_try_on(photo_path, garment_path)
+            result = await _fashn_try_on(photo_path, garment_path)
+            if not result:
+                result = await _kolors_try_on(photo_path, garment_path, garment_desc)
+            if not result:
+                result = await _catvton_try_on(photo_path, garment_path)
             if not result:
                 result = await _idm_vton_try_on(photo_path, garment_path, garment_desc)
             if not result:
