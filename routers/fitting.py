@@ -286,55 +286,55 @@ async def _fashn_try_on(
     return None
 
 
-# ── ② Kolors-Virtual-Try-On (아시아 전통 의상 특화 — Fashn.ai 폴백) ──
-# HuggingFace Space: Kwai-Kolors/Kolors-Virtual-Try-On
-# 쾌수(Kuaishou) 제작. 아시아 전통 의상(한복 등)에 상대적으로 강함.
-# 입력: 사람 사진 + 의상 이미지 + 의상 설명
+# ── ② Leffa (Virtual Try-On — Fashn.ai 폴백) ─────────────────
+# HuggingFace Space: franciszzj/Leffa
+# 2024/2025 최신 VTon 모델. API 완전 공개.
+# api_name="/leffa_predict_vt"
+# 입력: 사람 사진 + 의상 이미지 + 옵션들
+# 출력: (결과 이미지, 마스크, densepose)
 
-async def _kolors_try_on(
+async def _leffa_try_on(
     person_path: Path,
     garment_path: Path,
-    garment_desc: str = "Traditional Korean Hanbok",
 ) -> Optional[Path]:
-    """Kolors Virtual Try-On: 아시아 전통 의상 특화 모델."""
+    """Leffa Virtual Try-On: 2025 최신 모델, API 공개. 한복(전신 드레스) 모드."""
     try:
         from gradio_client import Client, handle_file
     except ImportError:
-        print("[fitting] gradio_client 미설치 → Kolors 건너뜀")
+        print("[fitting] gradio_client 미설치 -> Leffa 건너뜀")
         return None
 
     def _sync_call():
         client = Client(
-            "Kwai-Kolors/Kolors-Virtual-Try-On",
+            "franciszzj/Leffa",
             token=settings.HF_TOKEN or None,
             ssl_verify=False,
         )
-        # fn_index=2: Space 업데이트로 API 구조 변경
-        # 입력: Person image, Garment image, Seed(int), Random seed(bool)
-        # 출력: Result image, Seed used(int), Response(str)
         return client.predict(
-            handle_file(str(person_path)),  # Person image
-            handle_file(str(garment_path)), # Garment image
-            42,                             # Seed
-            False,                          # Random seed (False = 고정 시드 사용)
-            fn_index=2,
+            src_image_path=handle_file(str(person_path)),
+            ref_image_path=handle_file(str(garment_path)),
+            ref_acceleration=False,
+            step=30,
+            scale=2.5,
+            seed=42,
+            vt_model_type="dress_code",   # 전신 의상 지원 모델
+            vt_garment_type="dresses",    # 한복 = 전신 드레스 형태
+            vt_repaint=False,
+            api_name="/leffa_predict_vt",
         )
 
-    print("[fitting] [Kolors] Virtual Try-On 시도 (최대 3분 소요)...")
+    print("[fitting] [Leffa] Virtual Try-On 시도 (최대 3분 소요)...")
     try:
         loop = asyncio.get_event_loop()
         result = await asyncio.wait_for(
             loop.run_in_executor(None, _sync_call),
             timeout=180.0,
         )
-        # result = (Result image, Seed used, Response) 튜플
-        # result[0] = 결과 이미지 (dict with 'path' key)
+        # result = (generated_image, generated_mask, generated_densepose)
         if isinstance(result, (list, tuple)):
             item = result[0]
         else:
             item = result
-
-        print(f"[fitting] Kolors raw result[0] type={type(item).__name__} value={str(item)[:120]}")
 
         if isinstance(item, dict):
             fitted_path = Path(item.get("path") or "")
@@ -346,18 +346,18 @@ async def _kolors_try_on(
         if fitted_path.exists() and fitted_path.stat().st_size > 1000:
             out_path = settings.UPLOAD_DIR / f"result_{uuid.uuid4()}.jpg"
             out_path.write_bytes(fitted_path.read_bytes())
-            print(f"[fitting] [OK] Kolors 성공 -> {out_path.name}")
+            print(f"[fitting] [OK] Leffa 성공 -> {out_path.name}")
             try:
                 out_path = _postprocess_result(out_path)
                 print(f"[fitting] [OK] 후처리 완료 -> {out_path.name}")
             except Exception as pe:
                 print(f"[fitting] 후처리 오류 (원본 사용): {pe}")
             return out_path
-        print("[fitting] Kolors: 결과 이미지가 없거나 비정상 크기")
+        print(f"[fitting] Leffa: 결과 이미지 없음 (item={str(item)[:80]})")
     except asyncio.TimeoutError:
-        print("[fitting] Kolors 타임아웃 (3분 초과)")
+        print("[fitting] Leffa 타임아웃 (3분 초과)")
     except Exception as e:
-        print(f"[fitting] Kolors 오류: {type(e).__name__}: {e}")
+        print(f"[fitting] Leffa 오류: {type(e).__name__}: {e}")
 
     return None
 
@@ -699,7 +699,7 @@ async def _generate_fitting_image(photo_path: Path, hanbok: dict) -> Optional[Pa
         if garment_path and garment_path.exists():
             result = await _fashn_try_on(photo_path, garment_path)
             if not result:
-                result = await _kolors_try_on(photo_path, garment_path, garment_desc)
+                result = await _leffa_try_on(photo_path, garment_path)
             if not result:
                 result = await _idm_vton_try_on(photo_path, garment_path, garment_desc)
             if not result:
