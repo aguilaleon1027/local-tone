@@ -309,18 +309,18 @@ async def _kolors_try_on(
             token=settings.HF_TOKEN or None,
             ssl_verify=False,
         )
+        # fn_index=2 : Space 업데이트로 /tryon API명이 제거됨
+        # 실제 피팅 함수는 unnamed endpoint (fn_index=2)에 위치
+        # 입력: (human_img, garm_img, garment_des, is_checked)
         return client.predict(
-            human_img=handle_file(str(person_path)),
-            garm_img=handle_file(str(garment_path)),
-            garment_des=garment_desc,
-            is_checked=True,
-            is_checked_crop=False,
-            denoise_steps=30,
-            seed=42,
-            api_name="/tryon",
+            handle_file(str(person_path)),
+            handle_file(str(garment_path)),
+            garment_desc,
+            True,       # is_checked: 자동 마스크 생성
+            fn_index=2,
         )
 
-    print("[fitting] ① Kolors Virtual Try-On 시도 (최대 3분 소요)...")
+    print("[fitting] [Kolors] Virtual Try-On 시도 (최대 3분 소요)...")
     try:
         loop = asyncio.get_event_loop()
         result = await asyncio.wait_for(
@@ -693,6 +693,8 @@ async def _generate_fitting_image(photo_path: Path, hanbok: dict) -> Optional[Pa
         # 진짜 Virtual Try-On (한복 이미지 있을 때)
         if garment_path and garment_path.exists():
             result = await _fashn_try_on(photo_path, garment_path)
+            if not result:
+                result = await _kolors_try_on(photo_path, garment_path, garment_desc)
             if not result:
                 result = await _idm_vton_try_on(photo_path, garment_path, garment_desc)
             if not result:
