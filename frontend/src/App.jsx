@@ -145,10 +145,10 @@ const APP_I18N = {
 }
 
 const LANGUAGES = [
-  { key: 'ko', flag: '🇰🇷', name: '한국어' },
-  { key: 'en', flag: '🇺🇸', name: 'English' },
-  { key: 'zh', flag: '🇨🇳', name: '中文' },
-  { key: 'ja', flag: '🇯🇵', name: '日本語' },
+  { key: 'ko', flag: 'https://flagcdn.com/w40/kr.png', name: '한국어' },
+  { key: 'en', flag: 'https://flagcdn.com/w40/us.png', name: 'English' },
+  { key: 'zh', flag: 'https://flagcdn.com/w40/cn.png', name: '中文' },
+  { key: 'ja', flag: 'https://flagcdn.com/w40/jp.png', name: '日本語' },
 ]
 
 /* ══════════════════════════════════════
@@ -157,7 +157,7 @@ const LANGUAGES = [
 const BOOKING_I18N = {
   ko: {
     steps:          ['상품 선택', '날짜 선택', '정보 입력'],
-    title0: '한복을 선택해주세요', sub0: '원하시는 한복을 선택하세요',
+    title0: '한복을 선택해주세요', sub0: '원하시는 한복을 선택하세요 (복수 선택 가능)',
     title1: '날짜를 선택해주세요', rental: '대여일', return: '반납일',
     title2: '예약 정보를 입력해주세요',
     rentalTypeLabel: '대여 유형',
@@ -169,7 +169,7 @@ const BOOKING_I18N = {
   },
   en: {
     steps:          ['Select', 'Date', 'Info'],
-    title0: 'Select a Hanbok', sub0: 'Choose your favorite hanbok',
+    title0: 'Select a Hanbok', sub0: 'Choose your favorite hanbok (multiple selection allowed)',
     title1: 'Select Date', rental: 'Rental Date', return: 'Return Date',
     title2: 'Enter Your Info',
     rentalTypeLabel: 'Rental Type',
@@ -181,7 +181,7 @@ const BOOKING_I18N = {
   },
   zh: {
     steps:          ['选择韩服', '选择日期', '填写信息'],
-    title0: '请选择韩服', sub0: '选择您喜欢的韩服',
+    title0: '请选择韩服', sub0: '选择您喜欢的韩服（可多选）',
     title1: '请选择日期', rental: '租借日期', return: '归还日期',
     title2: '请填写预约信息',
     rentalTypeLabel: '租借类型',
@@ -193,7 +193,7 @@ const BOOKING_I18N = {
   },
   ja: {
     steps:          ['韓服を選択', '日付選択', '情報入力'],
-    title0: '韓服を選んでください', sub0: 'お好みの韓服をお選びください',
+    title0: '韓服を選んでください', sub0: 'お好みの韓服をお選びください（複数選択可）',
     title1: '日付を選んでください', rental: 'レンタル日', return: '返却日',
     title2: '予約情報を入力してください',
     rentalTypeLabel: 'レンタル種別',
@@ -328,44 +328,51 @@ function LanguageSplash({ onSelect }) {
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-start pt-10 px-6"
-      style={{ background: '#FFFFFF', maxWidth: '480px', margin: '0 auto' }}>
+      className="fixed inset-0 z-[100] overflow-y-auto"
+      style={{
+        maxWidth: '480px', margin: '0 auto',
+        backgroundImage: 'url(/splash.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}>
 
-      {/* 로고 영역 */}
-      <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.15, duration: 0.45 }}
-        className="mb-4 text-center">
-
-        {/* 로고 이미지 — 전체 표시 (위치 확인용) */}
-        <img
-          src="/logo.jpg"
-          alt="장금이 한복"
-          className="mx-auto"
-          style={{ width: '100%', height: 'auto', display: 'block' }}
-        />
-
-        <p className="font-sans font-medium text-[12px] mt-2" style={{ color: '#ABABAB', letterSpacing: '0.04em' }}>
-          Janggeum Hanbok · Since 2012
-        </p>
+      {/* 우측 상단 브랜드 텍스트 */}
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.4 }}
+        style={{ position: 'sticky', top: '5px', textAlign: 'right', paddingRight: '16px', zIndex: 1 }}>
+        <p className="font-sans font-bold text-[11px]" style={{ color: '#1A2B6B', letterSpacing: '-0.01em' }}>장금이공방</p>
+        <p className="font-sans text-[9px]" style={{ color: 'rgba(30,50,130,0.5)', letterSpacing: '0.03em' }}>Since 2012</p>
       </motion.div>
 
-      {/* 언어 선택 */}
-      <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3, duration: 0.45 }}
-        className="w-full space-y-3">
-        <p className="font-sans text-[13px] text-center mb-4" style={{ color: '#888' }}>
+      {/* 53% 지점까지 밀어주는 스페이서 */}
+      <div style={{ height: '50vh' }} />
+
+      {/* 언어 선택 영역 */}
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+        transition={{ delay: 0.4, duration: 0.5 }}
+        className="px-6 pb-10">
+        <p className="font-sans text-[12px] text-center mb-3" style={{ color: 'rgba(30,50,130,0.7)' }}>
           Please select your language · 언어를 선택해 주세요
         </p>
-        {LANGUAGES.map(({ key, flag, name }) => (
-          <motion.button key={key} whileTap={{ scale: 0.97 }}
-            onClick={() => onSelect(key)}
-            className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all"
-            style={{ border: '1.5px solid #E8EEFF', background: '#FAFBFF' }}>
-            <span style={{ fontSize: '26px', lineHeight: 1 }}>{flag}</span>
-            <span className="font-sans font-bold text-[16px]" style={{ color: '#1A1A3E' }}>{name}</span>
-            <ChevronRight size={16} style={{ color: '#ABABAB', marginLeft: 'auto' }} />
-          </motion.button>
-        ))}
+        <div className="space-y-2.5">
+          {LANGUAGES.map(({ key, flag, name }) => (
+            <motion.button key={key} whileTap={{ scale: 0.97 }}
+              onClick={() => onSelect(key)}
+              className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all"
+              style={{
+                background: 'rgba(255,255,255,0.6)',
+                border: '1.5px solid rgba(255,255,255,0.85)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+              }}>
+              <img src={flag} alt={name} style={{ width: '28px', height: '20px', objectFit: 'cover', borderRadius: '3px', flexShrink: 0 }} />
+              <span className="font-sans font-bold text-[16px]" style={{ color: '#1A2B6B' }}>{name}</span>
+              <ChevronRight size={16} style={{ color: 'rgba(40,60,140,0.45)', marginLeft: 'auto' }} />
+            </motion.button>
+          ))}
+        </div>
       </motion.div>
     </motion.div>
   )
@@ -722,17 +729,25 @@ function StepIndicator({ current, steps }) {
 function BookingTab({ catalog, preselect, lang }) {
   const t = BOOKING_I18N[lang] ?? BOOKING_I18N.ko
 
-  const [step, setStep]                     = useState(0)
-  const [selectedHanbok, setSelectedHanbok] = useState(preselect || null)
-  const [bookingDate, setBookingDate]       = useState('')
-  const [returnDate,  setReturnDate]        = useState('')
-  const [rentalType, setRentalType]         = useState('일반')
-  const [form, setForm]                     = useState({ name: '', phone: '', email: '' })
-  const [submitting, setSubmitting]         = useState(false)
-  const [done, setDone]                     = useState(false)
+  const [step, setStep]                       = useState(0)
+  const [selectedHanboks, setSelectedHanboks] = useState(preselect ? [preselect] : [])
+  const [bookingDate, setBookingDate]         = useState('')
+  const [returnDate,  setReturnDate]          = useState('')
+  const [rentalType, setRentalType]           = useState('일반')
+  const [form, setForm]                       = useState({ name: '', phone: '', email: '' })
+  const [submitting, setSubmitting]           = useState(false)
+  const [done, setDone]                       = useState(false)
+
+  const toggleHanbok = (item) => {
+    setSelectedHanboks(prev =>
+      prev.some(h => h.id === item.id)
+        ? prev.filter(h => h.id !== item.id)
+        : [...prev, item]
+    )
+  }
 
   const reset = () => {
-    setDone(false); setStep(0); setSelectedHanbok(null)
+    setDone(false); setStep(0); setSelectedHanboks([])
     setBookingDate(''); setReturnDate(''); setRentalType('일반')
     setForm({ name: '', phone: '', email: '' })
   }
@@ -745,7 +760,8 @@ function BookingTab({ catalog, preselect, lang }) {
         booking_date: bookingDate || null,
         return_date: returnDate || null,
         rental_type: rentalType || null,
-        hanbok_id: selectedHanbok?.id || null, hanbok_title: getHanbokTitle(selectedHanbok, lang) || null,
+        hanbok_id:    selectedHanboks.map(h => h.id).join(', ') || null,
+        hanbok_title: selectedHanboks.map(h => getHanbokTitle(h, lang)).join(', ') || null,
         lang,
       })
       setDone(true)
@@ -778,8 +794,8 @@ function BookingTab({ catalog, preselect, lang }) {
           <div className="flex flex-col flex-1 min-h-0">
             <p className="font-sans font-bold text-[15px] mb-0.5 flex-none" style={{ color: '#1A1A3E' }}>{t.title0}</p>
             <p className="font-sans text-[12px] mb-3 flex-none" style={{ color: '#888' }}>{t.sub0}</p>
-            <HanbokSelectGrid items={catalog} selected={selectedHanbok ? [selectedHanbok] : []}
-              onToggle={item => setSelectedHanbok(prev => prev?.id === item.id ? null : item)}
+            <HanbokSelectGrid items={catalog} selected={selectedHanboks}
+              onToggle={toggleHanbok}
               label={t.steps[0]} subLabel={t.sub0} lang={lang} />
           </div>
         )}
@@ -787,12 +803,16 @@ function BookingTab({ catalog, preselect, lang }) {
         {step === 1 && (
           <div className="space-y-4">
             <p className="font-sans font-bold text-[15px] mb-0.5" style={{ color: '#1A1A3E' }}>{t.title1}</p>
-            {selectedHanbok && (
-              <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: '#F8F8FC', border: '1px solid #F0F0F5' }}>
-                <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0" style={{ background: '#E8EEFF' }}>
-                  {selectedHanbok.image_url && <img src={selectedHanbok.image_url} alt={getHanbokTitle(selectedHanbok, lang)} className="w-full h-full object-cover" />}
-                </div>
-                <p className="font-sans font-semibold text-[13px]" style={{ color: '#1A1A3E' }}>{getHanbokTitle(selectedHanbok, lang)}</p>
+            {selectedHanboks.length > 0 && (
+              <div className="flex flex-col gap-2">
+                {selectedHanboks.map(hanbok => (
+                  <div key={hanbok.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: '#F8F8FC', border: '1px solid #F0F0F5' }}>
+                    <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0" style={{ background: '#E8EEFF' }}>
+                      {hanbok.image_url && <img src={hanbok.image_url} alt={getHanbokTitle(hanbok, lang)} className="w-full h-full object-cover" />}
+                    </div>
+                    <p className="font-sans font-semibold text-[13px]" style={{ color: '#1A1A3E' }}>{getHanbokTitle(hanbok, lang)}</p>
+                  </div>
+                ))}
               </div>
             )}
             <div>
@@ -811,7 +831,7 @@ function BookingTab({ catalog, preselect, lang }) {
             <p className="font-sans font-bold text-[15px] mb-4" style={{ color: '#1A1A3E' }}>{t.title2}</p>
 
             <div className="rounded-xl overflow-hidden mb-5" style={{ border: '1px solid #F0F0F5' }}>
-              {[[t.steps[0], selectedHanbok?.title || '—'], [t.rental, bookingDate || '—'], [t.return, returnDate || '—']]
+              {[[t.steps[0], selectedHanboks.map(h => getHanbokTitle(h, lang)).join(', ') || '—'], [t.rental, bookingDate || '—'], [t.return, returnDate || '—']]
                 .map(([label, value], i, arr) => (
                   <div key={label} className="flex items-center px-4 py-3"
                     style={{ borderBottom: i < arr.length - 1 ? '1px solid #F0F0F5' : 'none', background: '#FAFBFF' }}>
@@ -849,25 +869,25 @@ function BookingTab({ catalog, preselect, lang }) {
         )}
       </div>
 
-      <div className="flex-none px-4 py-4 space-y-2" style={{ borderTop: '1px solid #F0F0F5' }}>
+      <div className="flex-none px-4 py-4 flex gap-2" style={{ borderTop: '1px solid #F0F0F5' }}>
+        <button onClick={() => setStep(s => s - 1)} disabled={step === 0}
+          className="flex-1 py-3.5 rounded-xl font-sans font-bold text-[14px] disabled:opacity-30"
+          style={{ background: '#F0F0F5', color: '#666' }}>
+          {t.back}
+        </button>
         {step === 2 ? (
           <button onClick={handleSubmit} disabled={submitting || !form.name || !form.phone || !form.email}
-            className="w-full py-3.5 rounded-xl font-sans font-bold text-[14px] disabled:opacity-40 flex items-center justify-center gap-2"
+            className="flex-1 py-3.5 rounded-xl font-sans font-bold text-[14px] disabled:opacity-40 flex items-center justify-center gap-2"
             style={{ background: '#0022FE', color: '#FFF' }}>
             {submitting ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />{t.submitting}</> : t.submit}
           </button>
         ) : (
-          <button onClick={() => setStep(s => s + 1)} disabled={step === 0 && !selectedHanbok}
-            className="w-full py-3.5 rounded-xl font-sans font-bold text-[14px] disabled:opacity-40"
+          <button onClick={() => setStep(s => s + 1)} disabled={step === 0 && selectedHanboks.length === 0}
+            className="flex-1 py-3.5 rounded-xl font-sans font-bold text-[14px] disabled:opacity-40"
             style={{ background: '#0022FE', color: '#FFF' }}>
             {t.next}
           </button>
         )}
-        <button onClick={() => setStep(s => s - 1)} disabled={step === 0}
-          className="w-full py-3 rounded-xl font-sans font-bold text-[13px] disabled:opacity-30"
-          style={{ background: '#F0F0F5', color: '#666' }}>
-          {t.back}
-        </button>
       </div>
     </div>
   )
@@ -904,9 +924,8 @@ function MyPageTab({ catalog, lang, i18n, onChangeLang }) {
           <button onClick={onChangeLang}
             className="flex items-center justify-center w-9 h-9 rounded-full"
             style={{ background: '#F4F4F8' }}>
-            <span style={{ fontSize: '18px', lineHeight: 1 }}>
-              {LANGUAGES.find(l => l.key === lang)?.flag}
-            </span>
+            <img src={LANGUAGES.find(l => l.key === lang)?.flag} alt={lang}
+              style={{ width: '22px', height: '16px', objectFit: 'cover', borderRadius: '2px' }} />
           </button>
         </div>
       </div>
@@ -953,7 +972,9 @@ function MyPageTab({ catalog, lang, i18n, onChangeLang }) {
           <Globe size={22} strokeWidth={1.6} style={{ color: '#ABABAB', flexShrink: 0 }} />
           <p className="font-sans font-medium text-[15px] flex-1" style={{ color: '#1A1A3E' }}>{i18n.langBtn}</p>
           <span className="font-sans text-[12px] mr-1" style={{ color: '#ABABAB' }}>
-            {LANGUAGES.find(l => l.key === lang)?.flag} {LANGUAGES.find(l => l.key === lang)?.name}
+            <img src={LANGUAGES.find(l => l.key === lang)?.flag} alt={lang}
+              style={{ width: '18px', height: '13px', objectFit: 'cover', borderRadius: '2px', display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} />
+            {LANGUAGES.find(l => l.key === lang)?.name}
           </span>
           <ChevronRight size={16} style={{ color: '#D0D0D0' }} />
         </button>
@@ -985,7 +1006,6 @@ export default function App() {
   const [catalog, setCatalog]                 = useState([])
   const [detailItem, setDetailItem]           = useState(null)
   const [bookingPreselect, setBookingPreselect] = useState(null)
-
   useEffect(() => { api.getCatalog().then(setCatalog).catch(() => {}) }, [])
   useEffect(() => {
     const h = e => setTab(e.detail?.tab || 'home')
@@ -1004,7 +1024,7 @@ export default function App() {
 
   const i18n = APP_I18N[lang] ?? APP_I18N.ko
 
-  // 언어 미선택 → 스플래시
+  // 언어 미선택 → 언어선택 스플래시
   if (!lang || showLangSplash) return (
     <div style={{ height: '100dvh', maxWidth: '480px', margin: '0 auto' }}>
       <LanguageSplash onSelect={key => { setLang(key); setShowLangSplash(false) }} />
@@ -1021,10 +1041,10 @@ export default function App() {
           <Menu size={22} style={{ color: '#1A1A3E' }} />
         </button>
         <div className="flex-1 flex flex-col items-center justify-center gap-0.5">
-          <span className="font-sans font-bold" style={{ fontSize: '16px', color: '#1A1A3E', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+          <span className="font-sans font-bold" style={{ fontSize: '16px', color: '#1A4FFF', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
             장금이공방
           </span>
-          <span className="font-sans" style={{ fontSize: '10px', color: '#ABABAB', letterSpacing: '0.04em' }}>
+          <span className="font-sans" style={{ fontSize: '10px', color: '#85AEFF', letterSpacing: '0.04em' }}>
             Janggeum Hanbok · Since 2012
           </span>
         </div>
@@ -1061,7 +1081,13 @@ export default function App() {
 
       {/* 탭바 */}
       <nav className="flex-none flex safe-bottom"
-        style={{ height: '60px', background: '#FFFFFF', borderTop: '1px solid #F0F0F5' }}>
+        style={{
+          height: '64px',
+          background: 'linear-gradient(to right, #1035C8 0%, #4F78EE 55%, #85AAFF 100%)',
+          borderTop: 'none',
+          borderRadius: '20px 20px 0 0',
+          boxShadow: '0 -4px 24px rgba(16,53,200,0.22)',
+        }}>
         {TABS.map(({ id, Icon }) => {
           const active = tab === id
           const label  = i18n.tabs[id] ?? id
@@ -1069,14 +1095,25 @@ export default function App() {
             <motion.button key={id} onClick={() => setTab(id)} whileTap={{ scale: 0.85 }}
               className="relative flex-1 flex flex-col items-center justify-center gap-0.5">
               {active && (
-                <motion.div layoutId="tab-indicator" className="absolute top-0 left-4 right-4"
-                  style={{ height: '2px', background: '#0022FE', borderRadius: '0 0 2px 2px' }}
+                <motion.div layoutId="tab-indicator"
+                  className="absolute"
+                  style={{
+                    inset: '6px 8px',
+                    background: 'rgba(255,255,255,0.22)',
+                    borderRadius: '12px',
+                  }}
                   transition={{ type: 'spring', stiffness: 500, damping: 40 }} />
               )}
-              <Icon size={22} strokeWidth={active ? 2.2 : 1.5}
-                style={{ color: active ? '#0022FE' : '#C4CACE' }} className="transition-colors duration-150" />
+              <Icon size={21} strokeWidth={active ? 2.2 : 1.6}
+                style={{ color: active ? '#FFFFFF' : 'rgba(255,255,255,0.5)', position: 'relative', zIndex: 1 }}
+                className="transition-colors duration-150" />
               <span className="font-sans text-[10px] transition-colors duration-150"
-                style={{ color: active ? '#0022FE' : '#C4CACE', fontWeight: active ? 700 : 400, letterSpacing: '-0.01em' }}>
+                style={{
+                  color: active ? '#FFFFFF' : 'rgba(255,255,255,0.5)',
+                  fontWeight: active ? 700 : 400,
+                  letterSpacing: '-0.01em',
+                  position: 'relative', zIndex: 1,
+                }}>
                 {label}
               </span>
             </motion.button>

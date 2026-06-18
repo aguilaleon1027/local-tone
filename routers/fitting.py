@@ -286,7 +286,76 @@ async def _fashn_try_on(
     return None
 
 
-# ── ② Leffa (Virtual Try-On — Fashn.ai 폴백) ─────────────────
+# ── ② Kolors-Virtual-Try-On (아시아 전통 의상 특화 — Fashn.ai 폴백) ──
+# HuggingFace Space: plucxyomg/Kolors-Virtual-Try-On (공식 포크, API 공개)
+# 공식 Space(Kwai-Kolors)는 API 차단. 이 포크는 /tryon 엔드포인트 열림.
+# Kuaishou 제작 모델 → 아시아 전통 의상(한복 등)에 상대적으로 강함.
+
+async def _kolors_try_on(
+    person_path: Path,
+    garment_path: Path,
+) -> Optional[Path]:
+    """Kolors Virtual Try-On: 아시아 전통 의상 특화. plucxyomg 포크로 API 접근."""
+    try:
+        from gradio_client import Client, handle_file
+    except ImportError:
+        print("[fitting] gradio_client 미설치 -> Kolors 건너뜀")
+        return None
+
+    def _sync_call():
+        client = Client(
+            "plucxyomg/Kolors-Virtual-Try-On",
+            token=settings.HF_TOKEN or None,
+            ssl_verify=False,
+        )
+        return client.predict(
+            person_img=handle_file(str(person_path)),
+            garment_img=handle_file(str(garment_path)),
+            seed=42,
+            randomize_seed=False,
+            api_name="/tryon",
+        )
+
+    print("[fitting] [Kolors] Virtual Try-On 시도 (최대 3분 소요)...")
+    try:
+        loop = asyncio.get_event_loop()
+        result = await asyncio.wait_for(
+            loop.run_in_executor(None, _sync_call),
+            timeout=180.0,
+        )
+        # result = (Result image, Seed used, Response)
+        if isinstance(result, (list, tuple)):
+            item = result[0]
+        else:
+            item = result
+
+        if isinstance(item, dict):
+            fitted_path = Path(item.get("path") or "")
+        elif item is not None:
+            fitted_path = Path(str(item))
+        else:
+            fitted_path = Path("")
+
+        if fitted_path.exists() and fitted_path.stat().st_size > 1000:
+            out_path = settings.UPLOAD_DIR / f"result_{uuid.uuid4()}.jpg"
+            out_path.write_bytes(fitted_path.read_bytes())
+            print(f"[fitting] [OK] Kolors 성공 -> {out_path.name}")
+            try:
+                out_path = _postprocess_result(out_path)
+                print(f"[fitting] [OK] 후처리 완료 -> {out_path.name}")
+            except Exception as pe:
+                print(f"[fitting] 후처리 오류 (원본 사용): {pe}")
+            return out_path
+        print(f"[fitting] Kolors: 결과 이미지 없음 (item={str(item)[:80]})")
+    except asyncio.TimeoutError:
+        print("[fitting] Kolors 타임아웃 (3분 초과)")
+    except Exception as e:
+        print(f"[fitting] Kolors 오류: {type(e).__name__}: {e}")
+
+    return None
+
+
+# ── ③ Leffa (Virtual Try-On — Kolors 폴백) ────────────────────
 # HuggingFace Space: franciszzj/Leffa
 # 2024/2025 최신 VTon 모델. API 완전 공개.
 # api_name="/leffa_predict_vt"
@@ -699,6 +768,8 @@ async def _generate_fitting_image(photo_path: Path, hanbok: dict) -> Optional[Pa
         if garment_path and garment_path.exists():
             result = await _fashn_try_on(photo_path, garment_path)
             if not result:
+                result = await _kolors_try_on(photo_path, garment_path)
+            if not result:
                 result = await _leffa_try_on(photo_path, garment_path)
             if not result:
                 result = await _idm_vton_try_on(photo_path, garment_path, garment_desc)
@@ -824,45 +895,35 @@ async def generate_fitting(
     photo_path = _find_photo(photo_id)
     photo_url  = f"/uploads/{photo_path.name}"
 
-    # 이미지 생성 (IDM-VTON → OOTDiffusion → FLUX → Pollinations)
-    image_task = _generate_fitting_image(photo_path, hanbok)
+    # ── 이미지 생성 비활성화 ──────────────────────────────────────
+    # 가상 피팅 모델 품질 이슈로 현재 비활성화.
+    # 대신 사람 사진 + 한복 사진 나란히 표시 + Gemini 텍스트 추천만 제공.
+    # 추후 고품질 모델 도입 시 아래 주석을 해제하고 활성화할 것.
+    # image_task = _generate_fitting_image(photo_path, hanbok)
 
-    # 텍스트 스타일 추천 (Gemini 텍스트 모델, 무료 티어 사용 가능)
+    # 텍스트 스타일 추천 (Gemini — 무료 티어, 인물 분석 + 한복 추천)
+    ai_recommendation = None
     if settings.GEMINI_API_KEY:
-        _no_ssl = httpx.AsyncClient(verify=False, timeout=60.0)
-        gemini_client = genai.Client(
-            api_key=settings.GEMINI_API_KEY,
-            http_options=genai_types.HttpOptions(httpx_async_client=_no_ssl),
-        )
-        text_task = _get_text_recommendation(gemini_client, photo_path, hanbok)
+        try:
+            _no_ssl = httpx.AsyncClient(verify=False, timeout=60.0)
+            gemini_client = genai.Client(
+                api_key=settings.GEMINI_API_KEY,
+                http_options=genai_types.HttpOptions(httpx_async_client=_no_ssl),
+            )
+            ai_recommendation = await _get_text_recommendation(gemini_client, photo_path, hanbok)
+        except Exception as e:
+            print(f"[fitting] 텍스트 추천 오류: {e}")
     else:
         print("[fitting] GEMINI_API_KEY 미설정 — 스타일 추천 건너뜀")
-        text_task = asyncio.sleep(0)   # type: ignore[assignment]
-
-    img_result, rec_result = await asyncio.gather(
-        image_task, text_task, return_exceptions=True
-    )
-
-    result_image_url = None
-    if isinstance(img_result, Exception):
-        print(f"[fitting] 이미지 생성 최종 오류: {img_result}")
-    elif img_result is not None:
-        result_image_url = f"/uploads/{img_result.name}"
-
-    ai_recommendation = None
-    if isinstance(rec_result, Exception):
-        print(f"[fitting] 텍스트 추천 오류: {rec_result}")
-    elif isinstance(rec_result, str):
-        ai_recommendation = rec_result
 
     return FittingResult(
         fitting_id=fitting_id,
         hanbok_id=hanbok_id,
         hanbok_name=hanbok["title"],
         status="completed",
-        message=f"'{hanbok['title']}' 피팅이 완료되었습니다! 피팅 ID: {fitting_id}",
+        message=f"'{hanbok['title']}' 스타일 분석이 완료되었습니다! ID: {fitting_id}",
         ai_recommendation=ai_recommendation,
-        result_image_url=result_image_url,
+        result_image_url=None,   # 이미지 생성 비활성화 중
         photo_url=photo_url,
     )
 

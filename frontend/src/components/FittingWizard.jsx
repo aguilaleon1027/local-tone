@@ -313,8 +313,8 @@ function Step3({ photoId, hanbok, onRetry }) {
             </div>
           </div>
           <div>
-            <p className="font-sans text-base text-ink font-bold" style={{ letterSpacing: '-0.025em' }}>AI가 피팅 중입니다...</p>
-            <p className="font-sans text-xs text-muted mt-1.5">잠시만 기다려 주세요</p>
+            <p className="font-sans text-base text-ink font-bold" style={{ letterSpacing: '-0.025em' }}>스타일 분석 중...</p>
+            <p className="font-sans text-xs text-muted mt-1.5">AI가 어울리는 한복을 분석하고 있어요</p>
           </div>
         </>
       )}
@@ -339,43 +339,33 @@ function Step3({ photoId, hanbok, onRetry }) {
             피팅 완료!
           </motion.h3>
 
-          {/* 이미지 */}
+          {/* 사진 나란히 표시 */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
             className="w-full"
           >
-            {result?.result_image_url ? (
-              <div className="relative rounded-2xl overflow-hidden shadow-md">
-                <img src={result.result_image_url} alt="AI 피팅 결과" className="w-full object-cover rounded-2xl" />
-                <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded-full">
-                  <Sparkles size={10} className="text-white" />
-                  <span className="font-sans text-[10px] font-semibold text-white">AI 피팅 결과</span>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="relative rounded-2xl overflow-hidden shadow-sm">
+                <img
+                  src={result?.photo_url}
+                  alt="업로드 사진"
+                  className="w-full object-cover aspect-[3/4] rounded-2xl"
+                />
+                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-2.5">
+                  <p className="font-sans text-[11px] text-white/90 font-medium">내 사진</p>
                 </div>
               </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-3">
-                <div className="relative rounded-2xl overflow-hidden shadow-sm">
-                  <img
-                    src={result?.photo_url}
-                    alt="업로드 사진"
-                    className="w-full object-cover aspect-[3/4] rounded-2xl"
-                  />
-                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-2.5">
-                    <p className="font-sans text-[11px] text-white/90 font-medium">내 사진</p>
-                  </div>
-                </div>
-                <div className="relative rounded-2xl aspect-[3/4] overflow-hidden shadow-sm">
-                  <img src={hanbok?.image_url} alt={hanbok?.title} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                  <div className="absolute bottom-0 inset-x-0 p-2.5 text-center">
-                    <p className="font-serif text-xs font-semibold text-white">{hanbok?.title}</p>
-                    <p className="font-sans text-[10px] text-white/70 mt-0.5">{hanbok?.category}</p>
-                  </div>
+              <div className="relative rounded-2xl aspect-[3/4] overflow-hidden shadow-sm">
+                <img src={hanbok?.image_url} alt={hanbok?.title} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                <div className="absolute bottom-0 inset-x-0 p-2.5 text-center">
+                  <p className="font-serif text-xs font-semibold text-white">{hanbok?.title}</p>
+                  <p className="font-sans text-[10px] text-white/70 mt-0.5">{hanbok?.category}</p>
                 </div>
               </div>
-            )}
+            </div>
           </motion.div>
 
           {/* AI 추천 */}
